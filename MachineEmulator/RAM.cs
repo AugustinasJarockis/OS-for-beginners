@@ -2,8 +2,7 @@
 
 public class RAM
 {
-    //public const long RAM_SIZE = 4 294 967 296;
-    public const long RAM_SIZE = 1073741824;
+    public const long RAM_SIZE = 2 << 29;
     public RAM()
     {
         Data = new int[RAM_SIZE];
