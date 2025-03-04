@@ -2,10 +2,29 @@
 
 public class RAM
 {
-    public RAM(byte[] data)
+    //public const long RAM_SIZE = 4 294 967 296;
+    public const long RAM_SIZE = 1073741824;
+    public RAM()
     {
-        Data = data;
+        Data = new int[RAM_SIZE];
     }
 
-    public byte[] Data { get; }
+    public byte this[int key] {
+        get => GetValue(key);
+        set => SetValue(key, value);
+    }
+
+    private byte GetValue(int key) {
+        int dword = Data[key / 4];
+        return (byte)((dword >> ((3 - key % 4) * 8)) & 0xFF);
+    }
+
+    private void SetValue(int key, byte value) {
+        int dwordToSet = Data[key / 4];
+        int shiftCount = ((3 - key % 4) * 8);
+        int mask = 0xFF << shiftCount;
+        Data[key / 4] = (int)((dwordToSet & (0xFFFFFFFF ^ mask)) + (value << shiftCount));
+    }
+
+    private int[] Data { get; }
 }
