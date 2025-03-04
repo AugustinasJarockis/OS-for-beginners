@@ -1,3 +1,5 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using MachineEmulator;
 
-Console.WriteLine("Hello, World!");
+var ram = new RAM(data: []);
+var processor = new Processor(ram);
+processor.Run();
