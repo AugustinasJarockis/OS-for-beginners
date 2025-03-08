@@ -3,7 +3,7 @@ namespace Assembler.UnitTests;
 public class MachineCodeAssemblerTests
 {
     [TestCase("program.txt", "program-mc.txt")]
-    public async Task ToMachineCode_GivenInstruction_TranslatesCorrectly(
+    public void ToMachineCode_GivenInstruction_TranslatesCorrectly(
         string instructionFileName,
         string machineCodeFileName
     )
@@ -19,19 +19,19 @@ public class MachineCodeAssemblerTests
             "Data",
             machineCodeFileName
         );
-        var expectedMachineCode = await ReadMachineCodeFromFile(machineCodeFilePath);
+        var expectedMachineCode = ReadMachineCodeFromFile(machineCodeFilePath);
 
         // Act
-        var actualMachineCode = await MachineCodeAssembler.ToMachineCode(instructionFilePath);
+        var actualMachineCode = MachineCodeAssembler.ToMachineCode(instructionFilePath);
 
         // Assert
         Assert.That(actualMachineCode, Is.EqualTo(expectedMachineCode).AsCollection);
     }
 
-    private static async Task<List<int>> ReadMachineCodeFromFile(string filePath)
+    private static List<int> ReadMachineCodeFromFile(string filePath)
     {
         List<int> machineCode = [];
-        await foreach (var line in File.ReadLinesAsync(filePath))
+        foreach (var line in File.ReadLines(filePath))
         {
             var instructionMachineCode = Convert.ToInt32(line, 2);
             machineCode.Add(instructionMachineCode);

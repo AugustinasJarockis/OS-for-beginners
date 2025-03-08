@@ -2,11 +2,11 @@ namespace Assembler;
 
 public static class MachineCodeAssembler
 {
-    public static async Task<List<int>> ToMachineCode(string filePath)
+    public static List<int> ToMachineCode(string filePath)
     {
         List<int> machineCode = [];
 
-        await foreach (var instruction in File.ReadLinesAsync(filePath))
+        foreach (var instruction in File.ReadLines(filePath))
         {
             var instructionMachineCode = InstructionToMachineCode(instruction);
             machineCode.Add(instructionMachineCode);
