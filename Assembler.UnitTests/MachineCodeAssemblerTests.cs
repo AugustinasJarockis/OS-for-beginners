@@ -28,13 +28,14 @@ public class MachineCodeAssemblerTests
         Assert.That(actualMachineCode, Is.EqualTo(expectedMachineCode).AsCollection);
     }
 
-    private static List<int> ReadMachineCodeFromFile(string filePath)
+    private static List<byte> ReadMachineCodeFromFile(string filePath)
     {
-        List<int> machineCode = [];
+        List<byte> machineCode = [];
         foreach (var line in File.ReadLines(filePath))
         {
             var instructionMachineCode = Convert.ToInt32(line, 2);
-            machineCode.Add(instructionMachineCode);
+            var bytes = instructionMachineCode.ToBytes();
+            machineCode.AddRange(bytes);
         }
 
         return machineCode;

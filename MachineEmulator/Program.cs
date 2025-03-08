@@ -1,6 +1,14 @@
-﻿using MachineEmulator;
+﻿using Assembler;
+using MachineEmulator;
+
+var codeFilePath = Path.Join(Environment.CurrentDirectory, "code.txt");
+var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
 
 var ram = new RAM();
+for (var i = 0; i < machineCode.Count; i++)
+{
+    ram[0x408 + i] = machineCode[i];
+}
 
 ram[0] = 0xFF;
 ram[1] = 0xEE;
