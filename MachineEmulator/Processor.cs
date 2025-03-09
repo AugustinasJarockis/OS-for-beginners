@@ -4,7 +4,8 @@ namespace MachineEmulator;
 
 public class Processor
 {
-    private int pc, fr, sp, ptbr, r0, r1, r2, r3, r4, r5, r6, r7;
+    //pc, fr, sp, ptbr, r0, r1, r2, r3, r4, r5, r6, r7;
+    public List<int> registers = new(8);
 
     private readonly RAM _ram;
     
