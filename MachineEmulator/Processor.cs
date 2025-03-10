@@ -1,32 +1,57 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using MachineEmulator.Enums;
+using MachineEmulator.Operations;
 
 namespace MachineEmulator;
 
 public class Processor
 {
-    //pc, fr, sp, ptbr, r0, r1, r2, r3, r4, r5, r6, r7;
-    public List<int> registers = new(8);
+    public int[] registers = new int[12];
 
     private readonly RAM _ram;
+    private readonly InterruptDevice _interruptDevice;
     
-    public Processor(RAM ram)
+    public Processor(RAM ram, InterruptDevice interruptDevice)
     {
         _ram = ram;
+        _interruptDevice = interruptDevice;
     }
 
     [DoesNotReturn]
     public void Run()
     {
+        registers[(int)Register.PC] = 0x408;
+        
         while (true)
         {
-            var instruction = FetchInstruction();
-            // TODO: Decode
-            // TODO: Execute
+            var instruction = _ram.GetDWord(registers[(int)Register.PC]);
+            registers[(int)Register.PC] += 4;
+            
+            var executeCommand = Decoder.DecodeOperation(instruction);
+            executeCommand(this, _ram);
+            
+            CheckAndHandleInterruptIfNeeded();
         }
     }
 
-    private int FetchInstruction()
+    private void CheckAndHandleInterruptIfNeeded()
     {
-        throw new NotImplementedException();
+        if (!_interruptDevice.IsInterrupted())
+        {
+            return;
+        }
+        
+        if (IsInVirtualMode())
+        {
+            MachineStateOperations.EXIT(this, _ram);
+            _ram.SetDWord(0x404, registers[(int)Register.SP]);
+            registers[(int)Register.SP] = _ram.GetDWord(0x400);
+        }
+        
+        MemoryOperations.PUSHALL(this, _ram);
+        var interruptCode = _interruptDevice.GetInterruptCode();
+        MachineStateOperations.INT(this, _ram, interruptCode);
     }
+
+    private bool IsInVirtualMode() => (registers[(int)Register.FR] & 0b0100) != 0;
 }
