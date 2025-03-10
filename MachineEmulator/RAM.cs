@@ -2,11 +2,11 @@
 
 public class RAM
 {
-    private const long RamSize = 2 << 29;
+    private const long RAM_SIZE = 2 << 29;
     
     public RAM()
     {
-        Data = new int[RamSize];
+        Data = new int[RAM_SIZE];
     }
     
     private int[] Data { get; }
