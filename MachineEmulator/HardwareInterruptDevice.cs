@@ -1,6 +1,6 @@
 namespace MachineEmulator;
 
-public class InterruptDevice
+public class HardwareInterruptDevice
 {
     private readonly Stack<byte> _interrupts = new();
 
