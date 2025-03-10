@@ -3,7 +3,7 @@ using MachineEmulator;
 
 var codeFilePath = Path.Join(Environment.CurrentDirectory, "code.txt");
 var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
-var interruptDevice = new InterruptDevice();
+var interruptDevice = new HardwareInterruptDevice();
 
 var ram = new RAM();
 for (var i = 0; i < machineCode.Count; i++)
