@@ -28,5 +28,15 @@ namespace MachineEmulator.Operations
             else
                 proc.registers[(int)Register.FR] -= (proc.registers[(int)Register.FR] & 0b1000);
         }
+
+        public static void SetModeFlag(Processor proc)
+        {
+            proc.registers[(int)Register.FR] |= 0b0100;
+        }
+        
+        public static void ClearModeFlag(Processor proc)
+        {
+            proc.registers[(int)Register.FR] -= proc.registers[(int)Register.FR] & 0b0100;
+        }
     }
 }

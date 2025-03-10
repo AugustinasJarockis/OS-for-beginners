@@ -32,7 +32,8 @@ namespace MachineEmulator
 
             return (proc, ram) => MachineStateOperations.INT(proc, ram, 2); 
         }
-        public static Action<Processor, RAM> DecodeArithmeticOperation(int opCode) {
+
+        private static Action<Processor, RAM> DecodeArithmeticOperation(int opCode) {
             Register reg1 = DecodeRegister((opCode & 0x000003E0) >> 5);
             Register reg2 = DecodeRegister((opCode & 0x0000001F) >> 0);
             if (!IsGeneralPurposeRegister(reg1) || !IsGeneralPurposeRegister(reg2))
@@ -52,7 +53,7 @@ namespace MachineEmulator
             return (proc, ram) => MachineStateOperations.INT(proc, ram, 2);
         }
 
-        public static Action<Processor, RAM> DecodeLogicalOperation(int opCode) {
+        private static Action<Processor, RAM> DecodeLogicalOperation(int opCode) {
             if ((opCode & 0xFFFFFFE0) == 0x01100000) {
                 Register reg = DecodeRegister((opCode & 0x0000001F) >> 0);
                 if (!IsGeneralPurposeRegister(reg))

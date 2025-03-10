@@ -1,18 +1,15 @@
-using System.Buffers.Binary;
-
 namespace Assembler;
 
 public static class MachineCodeAssembler
 {
-    public static List<byte> ToMachineCode(string filePath)
+    public static List<int> ToMachineCode(string filePath)
     {
-        List<byte> machineCode = [];
+        List<int> machineCode = [];
 
         foreach (var instruction in File.ReadLines(filePath))
         {
             var instructionMachineCode = InstructionToMachineCode(instruction);
-            var bytes = instructionMachineCode.ToBytes();
-            machineCode.AddRange(bytes);
+            machineCode.AddRange(instructionMachineCode);
         }
 
         return machineCode;
