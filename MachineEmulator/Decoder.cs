@@ -79,6 +79,9 @@ namespace MachineEmulator
         }
 
         private static Action<Processor, RAM> DecodeJumpOperation(int opCode) {
+            if (opCode == 0x01280000)
+                return (proc, ram) => ControlFlowOperations.RET(proc, ram);
+
             Register reg = DecodeRegister((opCode & 0x0000001F) >> 0);
             if (!IsGeneralPurposeRegister(reg))
                 return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
@@ -99,14 +102,17 @@ namespace MachineEmulator
                 return (proc, ram) => ControlFlowOperations.JM(proc, ram, reg);
             if ((opCode & 0xFFFFFFE0) == 0x01270000)
                 return (proc, ram) => ControlFlowOperations.LOOP(proc, ram, reg);
-            if ((opCode & 0xFFFFFFE0) == 0x01280000)
-                return (proc, ram) => ControlFlowOperations.RET(proc, ram, reg);
             if ((opCode & 0xFFFFFFE0) == 0x01290000)
                 return (proc, ram) => ControlFlowOperations.CALL(proc, ram, reg);
 
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
         private static Action<Processor, RAM> DecodeMemoryOperation(int opCode) {
+            if (opCode == 0x01330000)
+                return (proc, ram) => MemoryOperations.PUSHALL(proc, ram);
+            if (opCode == 0x01340000)
+                return (proc, ram) => MemoryOperations.POPALL(proc, ram);
+
             if ((opCode & 0xFFFFFC00) == 0x01300000) {
                 Register reg1 = DecodeRegister((opCode & 0x000003E0) >> 5);
                 Register reg2 = DecodeRegister((opCode & 0x0000001F) >> 0);
@@ -117,22 +123,15 @@ namespace MachineEmulator
                 return (proc, ram) => MemoryOperations.MOV(proc, ram, reg1, reg2);
             }
 
-            {
-                Register reg = DecodeRegister((opCode & 0x0000001F) >> 0);
+            Register reg = DecodeRegister((opCode & 0x0000001F) >> 0);
 
-                if (!IsGeneralPurposeRegister(reg))
-                    return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
+            if (!IsGeneralPurposeRegister(reg))
+                return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
 
-                if((opCode & 0xFFFFFFE0) == 0x01310000)
-                    return (proc, ram) => MemoryOperations.PUSH(proc, ram, reg);
-                if ((opCode & 0xFFFFFFE0) == 0x01320000)
-                    return (proc, ram) => MemoryOperations.POP(proc, ram, reg);
-            }
-
-            if (opCode == 0x01330000)
-                return (proc, ram) => MemoryOperations.PUSHALL(proc, ram);
-            if (opCode == 0x01340000)
-                return (proc, ram) => MemoryOperations.POPALL(proc, ram);
+            if((opCode & 0xFFFFFFE0) == 0x01310000)
+                return (proc, ram) => MemoryOperations.PUSH(proc, ram, reg);
+            if ((opCode & 0xFFFFFFE0) == 0x01320000)
+                return (proc, ram) => MemoryOperations.POP(proc, ram, reg);
             
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
