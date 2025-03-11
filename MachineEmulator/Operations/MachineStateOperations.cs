@@ -1,20 +1,50 @@
-﻿using MachineEmulator.Enums;
+﻿using MachineEmulator.Constants;
+using MachineEmulator.Enums;
 
-namespace MachineEmulator.Operations
+namespace MachineEmulator.Operations;
+
+public class MachineStateOperations
 {
-    class MachineStateOperations
+    public static void INT(Processor proc, RAM ram, byte interruptCode)
     {
-        public static void INT(Processor proc, RAM ram, byte code) {
-            throw new NotImplementedException();
+        if (proc.IsInVirtualMode)
+        {
+            EXIT(proc, ram);
         }
-        public static void ENTER(Processor proc, RAM ram) {
-            throw new NotImplementedException();
+        
+        MemoryOperations.PUSHALL(proc, ram);
+        proc.registers[(int)Register.PC] = ram.GetDWord(4 * interruptCode);
+    }
+        
+    public static void ENTER(Processor proc, RAM ram)
+    {
+        if (proc.IsInVirtualMode)
+        {
+            INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
-        public static void EXIT(Processor proc, RAM ram) {
-            throw new NotImplementedException();
+        else
+        {
+            FlagUtils.SetModeFlag(proc);
         }
-        public static void HALT(Processor proc, RAM ram) {
-            throw new NotImplementedException();
+    }
+
+    public static void EXIT(Processor proc, RAM ram)
+    {
+        if (proc.IsInVirtualMode)
+        {
+            ram.SetDWord(0x404, proc.registers[(int)Register.SP]);
+            proc.registers[(int)Register.SP] = ram.GetDWord(0x400);
+            FlagUtils.ClearModeFlag(proc);
         }
+        else
+        {
+            INT(proc, ram, InterruptCodes.InvalidOpCode);
+        }
+    }
+        
+    public static void HALT(Processor proc, RAM ram)
+    {
+        EXIT(proc, ram);
+        // TODO: do something more; maybe call an interrupt?
     }
 }
