@@ -13,8 +13,8 @@ namespace MachineEmulator.Operations
         public static void MOV(Processor proc, RAM ram, Register reg1, Register reg2) {
             throw new NotImplementedException();
         }
-        public static void MOV(Processor proc, RAM ram, Register reg, int literal) {
-            throw new NotImplementedException();
+        public static void MOV(Processor proc, RAM ram, Register reg, uint literal) {
+            proc.registers[(int)reg] = literal;
         }
         public static void PUSH(Processor proc, RAM ram, Register reg) {
             throw new NotImplementedException();

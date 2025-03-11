@@ -13,7 +13,7 @@ public class MachineStateOperations
         }
         
         MemoryOperations.PUSHALL(proc, ram);
-        proc.registers[(int)Register.PC] = ram.GetDWord(4 * interruptCode);
+        proc.registers[(int)Register.PC] = ram.GetDWord(4 * (ulong)interruptCode);
     }
         
     public static void ENTER(Processor proc, RAM ram)

@@ -6,7 +6,7 @@ namespace MachineEmulator;
 
 public class Processor
 {
-    public int[] registers = new int[12];
+    public uint[] registers = new uint[12];
 
     private readonly RAM _ram;
     private readonly HardwareInterruptDevice hardwareInterruptDevice;

@@ -6,31 +6,31 @@ public class RAM
     
     public RAM()
     {
-        Data = new int[RAM_SIZE];
+        Data = new uint[RAM_SIZE];
     }
     
-    private int[] Data { get; }
+    private uint[] Data { get; }
     
-    public byte GetByte(long address)
+    public byte GetByte(ulong address)
     {
-        int dword = Data[address / 4];
+        uint dword = Data[address / 4];
         return (byte)((dword >> (int)((3 - address % 4) * 8)) & 0xFF);
     }
 
-    public void SetByte(long address, byte value)
+    public void SetByte(ulong address, byte value)
     {
-        int dwordToSet = Data[address / 4];
+        uint dwordToSet = Data[address / 4];
         int shiftCount = (int)(3 - address % 4) * 8;
         int mask = 0xFF << shiftCount;
-        Data[address / 4] = (int)((dwordToSet & (0xFFFFFFFF ^ mask)) + (value << shiftCount));
+        Data[address / 4] = (uint)((dwordToSet & (0xFFFFFFFF ^ mask)) + (value << shiftCount));
     }
 
-    public int GetDWord(long address)
+    public uint GetDWord(ulong address)
     {
         return Data[address / 4];
     }
 
-    public void SetDWord(long address, int value)
+    public void SetDWord(ulong address, uint value)
     {
         Data[address / 4] = value;
     }
