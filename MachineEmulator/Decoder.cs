@@ -10,7 +10,7 @@ namespace MachineEmulator
             if ((opCode & 0xE0000000) == 0x20000000) { // MOV literal alternative
                 Register reg = DecodeRegister((opCode & 0x1F000000) >> 24);
                 uint literal = opCode & 0x00FFFFFF;
-                return (proc, ram) => MemoryOperations.MOV(proc, ram, reg, literal);
+                return (proc, ram) => MemoryOperations.MOVD(proc, ram, reg, literal);
             }
             if ((opCode & 0xFFFE0000) == 0x02000000) {
                 return DecodeLoadOrStoreOperation(opCode);
