@@ -13,7 +13,7 @@ namespace MachineEmulator.Operations
         public static void MOV(Processor proc, RAM ram, Register reg1, Register reg2) {
             proc.registers[(int)reg1] = proc.registers[(int)reg2];
         }
-        public static void MOVD(Processor proc, RAM ram, Register reg, int literal) {
+        public static void MOVD(Processor proc, RAM ram, Register reg, uint literal) {
             proc.registers[(int)reg] = literal;
         }
         public static void PUSH(Processor proc, RAM ram, Register reg) {

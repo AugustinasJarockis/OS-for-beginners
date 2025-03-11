@@ -2,9 +2,9 @@ namespace Assembler;
 
 public static class MachineCodeAssembler
 {
-    public static List<int> ToMachineCode(string filePath)
+    public static List<uint> ToMachineCode(string filePath)
     {
-        List<int> machineCode = [];
+        List<uint> machineCode = [];
 
         foreach (var instruction in File.ReadLines(filePath))
         {
@@ -15,13 +15,13 @@ public static class MachineCodeAssembler
         return machineCode;
     }
 
-    private static int InstructionToMachineCode(string instruction)
+    private static uint InstructionToMachineCode(string instruction)
     {
         var (mnemonic, rest) = ParseNextInstructionValue(instruction);
         var machineCode = MnemonicToMachineCode(mnemonic) << 16;
         var totalOperandCount = GetInstructionOperandCount(mnemonic);
 
-        for (var i = 1; i <= totalOperandCount; i++)
+        for (uint i = 1; i <= totalOperandCount; i++)
         {
             var (operand, _rest) = ParseNextInstructionValue(rest);
             
@@ -38,19 +38,19 @@ public static class MachineCodeAssembler
         return machineCode;
     }
 
-    private static int OperandToMachineCode(
+    private static uint OperandToMachineCode(
         string mnemonic,
         string operand,
-        int currentOperandPosition,
-        int totalOperandCount
+        uint currentOperandPosition,
+        uint totalOperandCount
     ) =>
         mnemonic switch
         {
-            "INT" => int.Parse(operand),
+            "INT" => uint.Parse(operand),
             "MOVD" => currentOperandPosition == 1
                 ? RegisterToMachineCode(operand) << 24
-                : int.Parse(operand),
-            _ => RegisterToMachineCode(operand) << 5 * (totalOperandCount - currentOperandPosition),
+                : uint.Parse(operand),
+            _ => RegisterToMachineCode(operand) << (int)(5 * (totalOperandCount - currentOperandPosition)),
         };
 
     private static (string, string) ParseNextInstructionValue(string instruction)
@@ -68,7 +68,7 @@ public static class MachineCodeAssembler
         return (mnemonic.ToUpper(), rest.Trim());
     }
 
-    private static int GetInstructionOperandCount(string mnemonic) =>
+    private static uint GetInstructionOperandCount(string mnemonic) =>
         mnemonic switch
         {
             "RET" or "PUSHALL" or "POPALL" or "ENTER" or "EXIT" or "HALT" => 0,
@@ -103,7 +103,7 @@ public static class MachineCodeAssembler
             ),
         };
 
-    private static int MnemonicToMachineCode(string mnemonic) =>
+    private static uint MnemonicToMachineCode(string mnemonic) =>
         mnemonic switch
         {
             "ADD" => 0b0000_0001_0000_0000,
@@ -143,7 +143,7 @@ public static class MachineCodeAssembler
             ),
         };
 
-    private static int RegisterToMachineCode(string register) =>
+    private static uint RegisterToMachineCode(string register) =>
         register switch
         {
             "R0" => 0b0000,

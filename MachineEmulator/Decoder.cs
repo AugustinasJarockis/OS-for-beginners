@@ -6,10 +6,10 @@ namespace MachineEmulator
 {
     static class Decoder
     {
-        public static Action<Processor, RAM> DecodeOperation(int opCode) {
+        public static Action<Processor, RAM> DecodeOperation(uint opCode) {
             if ((opCode & 0xE0000000) == 0x20000000) { // MOV literal alternative
                 Register reg = DecodeRegister((opCode & 0x1F000000) >> 24);
-                int literal = opCode & 0x00FFFFFF;
+                uint literal = opCode & 0x00FFFFFF;
                 return (proc, ram) => MemoryOperations.MOVD(proc, ram, reg, literal);
             }
             if ((opCode & 0xFFFE0000) == 0x02000000) {
@@ -34,7 +34,7 @@ namespace MachineEmulator
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode); 
         }
 
-        private static Action<Processor, RAM> DecodeArithmeticOperation(int opCode) {
+        private static Action<Processor, RAM> DecodeArithmeticOperation(uint opCode) {
             Register reg1 = DecodeRegister((opCode & 0x000003E0) >> 5);
             Register reg2 = DecodeRegister((opCode & 0x0000001F) >> 0);
             if (!IsGeneralPurposeRegister(reg1) || !IsGeneralPurposeRegister(reg2))
@@ -54,7 +54,7 @@ namespace MachineEmulator
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
 
-        private static Action<Processor, RAM> DecodeLogicalOperation(int opCode) {
+        private static Action<Processor, RAM> DecodeLogicalOperation(uint opCode) {
             if ((opCode & 0xFFFFFFE0) == 0x01100000) {
                 Register reg = DecodeRegister((opCode & 0x0000001F) >> 0);
                 if (!IsGeneralPurposeRegister(reg))
@@ -78,7 +78,7 @@ namespace MachineEmulator
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
 
-        private static Action<Processor, RAM> DecodeJumpOperation(int opCode) {
+        private static Action<Processor, RAM> DecodeJumpOperation(uint opCode) {
             if (opCode == 0x01280000)
                 return (proc, ram) => ControlFlowOperations.RET(proc, ram);
 
@@ -107,7 +107,7 @@ namespace MachineEmulator
 
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
-        private static Action<Processor, RAM> DecodeMemoryOperation(int opCode) {
+        private static Action<Processor, RAM> DecodeMemoryOperation(uint opCode) {
             if (opCode == 0x01330000)
                 return (proc, ram) => MemoryOperations.PUSHALL(proc, ram);
             if (opCode == 0x01340000)
@@ -136,7 +136,7 @@ namespace MachineEmulator
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
 
-        private static Action<Processor, RAM> DecodeMachineStateOperation(int opCode) {
+        private static Action<Processor, RAM> DecodeMachineStateOperation(uint opCode) {
             if ((opCode & 0xFFFFFF00) == 0x01400000) {
                 byte code = (byte)(opCode & 0xFF);
                 return (proc, ram) => MachineStateOperations.INT(proc, ram, code);
@@ -151,7 +151,7 @@ namespace MachineEmulator
 
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
-        private static Action<Processor, RAM> DecodeLoadOrStoreOperation(int opCode) {
+        private static Action<Processor, RAM> DecodeLoadOrStoreOperation(uint opCode) {
             Register reg1 = DecodeRegister((opCode & 0x000003E0) >> 5);
             Register reg2 = DecodeRegister((opCode & 0x0000001F) >> 0);
 
@@ -166,7 +166,7 @@ namespace MachineEmulator
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
 
-        private static Register DecodeRegister(int registerCode) {
+        private static Register DecodeRegister(uint registerCode) {
             switch (registerCode) {
                 case 0b00000:
                     return Register.R0;
