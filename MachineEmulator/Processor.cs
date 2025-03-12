@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using MachineEmulator.Constants;
 using MachineEmulator.Enums;
 using MachineEmulator.Operations;
 
@@ -23,6 +24,9 @@ public class Processor
     public void Run()
     {
         registers[(int)Register.PC] = 0x408;
+
+        var periodicInterruptTimer = new Thread(RunPeriodicInterruptTimer);
+        periodicInterruptTimer.Start();
         
         while (true)
         {
@@ -37,6 +41,18 @@ public class Processor
                 var interruptCode = hardwareInterruptDevice.GetInterruptCode();
                 MachineStateOperations.INT(this, _ram, interruptCode);
             }
+        }
+    }
+
+    [DoesNotReturn]
+    private void RunPeriodicInterruptTimer()
+    {
+        var interval = TimeSpan.FromMilliseconds(4);
+        
+        while (true)
+        {
+            Thread.Sleep(interval);
+            hardwareInterruptDevice.Interrupt(InterruptCodes.PeriodicInterrupt);
         }
     }
 }
