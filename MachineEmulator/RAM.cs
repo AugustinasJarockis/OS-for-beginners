@@ -1,12 +1,24 @@
-﻿namespace MachineEmulator;
+﻿using MachineEmulator.Constants;
 
-public class RAM
-{
-    private const long RAM_SIZE = 2 << 29;
-    
+namespace MachineEmulator;
+
+public class RAM : IDisposable
+{    
     public RAM()
     {
-        Data = new uint[RAM_SIZE];
+        Data = new uint[SizeConstants.RAM_SIZE];
+    }
+
+    public RAM(string filePath) {
+        Data = new uint[SizeConstants.RAM_SIZE];
+        byte[] fileData = File.ReadAllBytes(filePath);
+        Buffer.BlockCopy(fileData, 0, Data, 0, fileData.Length);
+    }
+    public void Dispose() {
+        FileStream stream = File.Open("ramSnapshot.mem", FileMode.Create);
+        byte[] writeData = new byte[SizeConstants.MB64];
+        Buffer.BlockCopy(Data, 0, writeData, 0, (int)SizeConstants.MB64);
+        stream.Write(writeData, 0, (int)SizeConstants.MB64);
     }
     
     private uint[] Data { get; }
