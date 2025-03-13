@@ -95,6 +95,8 @@ public static class MachineCodeAssembler
             or "XOR"
             or "LOAD"
             or "STORE"
+            or "LOADB"
+            or "STOREB"
             or "MOV"
             or "MOVD" => 2,
             _ => throw new ArgumentOutOfRangeException(
@@ -127,6 +129,8 @@ public static class MachineCodeAssembler
             "CALL" => 0b0000_0001_0010_1001,
             "LOAD" => 0b0000_0010_0000_0000,
             "STORE" => 0b0000_0010_0000_0001,
+            "LOADB" => 0b0000_0010_0000_0010,
+            "STOREB" => 0b0000_0010_0000_0011,
             "MOV" => 0b0000_0001_0011_0000,
             "MOVD" => 0b0010_0000_0000_0000,
             "PUSH" => 0b0000_0001_0011_0001,

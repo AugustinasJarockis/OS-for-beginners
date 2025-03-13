@@ -10,6 +10,12 @@ namespace MachineEmulator.Operations
         public static void STORE(Processor proc, RAM ram, Register reg1, Register reg2) {
             ram.SetDWord(proc.registers[(int)reg2], proc.registers[(int)reg1]);
         }
+        public static void LOADB(Processor proc, RAM ram, Register reg1, Register reg2) {
+            proc.registers[(int)reg1] = ram.GetByte(proc.registers[(int)reg2]);
+        }
+        public static void STOREB(Processor proc, RAM ram, Register reg1, Register reg2) {
+            ram.SetByte(proc.registers[(int)reg2], (byte)(proc.registers[(int)reg1] & 0xFF));
+        }
         public static void MOV(Processor proc, RAM ram, Register reg1, Register reg2) {
             proc.registers[(int)reg1] = proc.registers[(int)reg2];
         }

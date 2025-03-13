@@ -162,6 +162,10 @@ namespace MachineEmulator
                 return (proc, ram) => MemoryOperations.LOAD(proc, ram, reg1, reg2);
             if ((opCode & 0xFFFFFC00) == 0x02010000)
                 return (proc, ram) => MemoryOperations.STORE(proc, ram, reg1, reg2);
+            if ((opCode & 0xFFFFFC00) == 0x02020000)
+                return (proc, ram) => MemoryOperations.LOADB(proc, ram, reg1, reg2);
+            if ((opCode & 0xFFFFFC00) == 0x02030000)
+                return (proc, ram) => MemoryOperations.STOREB(proc, ram, reg1, reg2);
 
             return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
