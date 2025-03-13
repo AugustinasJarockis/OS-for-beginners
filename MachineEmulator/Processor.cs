@@ -23,10 +23,13 @@ public class Processor
     [DoesNotReturn]
     public void Run()
     {
-        registers[(int)Register.PC] = 0x408;
+        registers[(int)Register.PC] = 0x508;
 
         var periodicInterruptTimer = new Thread(RunPeriodicInterruptTimer);
         periodicInterruptTimer.Start();
+
+        var outputTerminalWatcher = new Thread(WatchTerminalOutput);
+        outputTerminalWatcher.Start();
         
         while (true)
         {
@@ -53,6 +56,18 @@ public class Processor
         {
             Thread.Sleep(interval);
             hardwareInterruptDevice.Interrupt(InterruptCodes.PeriodicInterrupt);
+        }
+    }
+
+    [DoesNotReturn]
+    private void WatchTerminalOutput() {
+        while(true) 
+        {
+            var terminalValue = _ram.GetByte(MemoryLocations.TerminalOutput);
+            if (terminalValue != 0) {
+                Console.Write((char)terminalValue);
+                _ram.SetByte(MemoryLocations.TerminalOutput, 0);
+            }
         }
     }
 }
