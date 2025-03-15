@@ -3,19 +3,24 @@ namespace MachineEmulator;
 public class HardwareInterruptDevice
 {
     private readonly Stack<byte> _interrupts = new();
-
-    public bool IsInterrupted()
-    {
-        return _interrupts.Count > 0;
-    }
+    private readonly Lock _lock = new();
 
     public void Interrupt(byte interruptCode)
     {
-        _interrupts.Push(interruptCode);
+        lock (_lock)
+        {
+            if (!_interrupts.Contains(interruptCode))
+            {
+                _interrupts.Push(interruptCode);
+            }
+        }
     }
 
-    public byte GetInterruptCode()
+    public byte? TryGetInterruptCode()
     {
-        return _interrupts.Pop();
+        lock (_lock)
+        {
+            return _interrupts.TryPop(out var code) ? code : null;
+        }
     }
 }
