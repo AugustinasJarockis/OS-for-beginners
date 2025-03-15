@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembler", "Assembler\Asse
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembler.UnitTests", "Assembler.UnitTests\Assembler.UnitTests.csproj", "{79F6AFAF-D2F6-48E0-87AF-26AB5B264508}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootloader", "Bootloader\Bootloader.csproj", "{984EE004-32ED-40E6-876C-F4C90680CE83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{79F6AFAF-D2F6-48E0-87AF-26AB5B264508}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79F6AFAF-D2F6-48E0-87AF-26AB5B264508}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79F6AFAF-D2F6-48E0-87AF-26AB5B264508}.Release|Any CPU.Build.0 = Release|Any CPU
+		{984EE004-32ED-40E6-876C-F4C90680CE83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{984EE004-32ED-40E6-876C-F4C90680CE83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{984EE004-32ED-40E6-876C-F4C90680CE83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{984EE004-32ED-40E6-876C-F4C90680CE83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
