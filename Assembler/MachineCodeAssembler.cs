@@ -71,7 +71,7 @@ public static class MachineCodeAssembler
     private static uint GetInstructionOperandCount(string mnemonic) =>
         mnemonic switch
         {
-            "RET" or "PUSHALL" or "POPALL" or "ENTER" or "EXIT" or "HALT" => 0,
+            "RET" or "PUSHALL" or "POPALL" or "ENTER" or "EXIT" or "HALT" or "POPINT" => 0,
             "NEG"
             or "JMP"
             or "JC"
@@ -137,6 +137,7 @@ public static class MachineCodeAssembler
             "POP" => 0b0000_0001_0011_0010,
             "PUSHALL" => 0b0000_0001_0011_0011,
             "POPALL" => 0b0000_0001_0011_0100,
+            "POPINT" => 0b0000_0001_0011_0101,
             "INT" => 0b0000_0001_0100_0000,
             "ENTER" => 0b0000_0001_0100_0001,
             "EXIT" => 0b0000_0001_0100_0010,

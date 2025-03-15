@@ -38,5 +38,11 @@ namespace MachineEmulator.Operations
             for (int i = 11; i >= 0; i--)
                 POP(proc, ram, (Register)i);
         }
+        public static void POPINT(Processor proc, RAM ram) {
+            POPALL(proc, ram);
+            
+            if (proc.IsInVirtualMode)
+                proc.registers[(int)Register.SP] = ram.GetDWord(0x404);
+        }
     }
 }

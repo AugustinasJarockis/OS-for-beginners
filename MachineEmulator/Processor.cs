@@ -10,12 +10,14 @@ public class Processor
     public uint[] registers = new uint[12];
 
     private readonly RAM _ram;
-    private readonly HardwareInterruptDevice hardwareInterruptDevice;
+    private readonly HardwareInterruptDevice _hardwareInterruptDevice;
+    private readonly TimeSpan _periodicInterruptInterval;
     
-    public Processor(RAM ram, HardwareInterruptDevice hardwareInterruptDevice)
+    public Processor(RAM ram, HardwareInterruptDevice hardwareInterruptDevice, TimeSpan periodicInterruptInterval)
     {
         _ram = ram;
-        this.hardwareInterruptDevice = hardwareInterruptDevice;
+        _hardwareInterruptDevice = hardwareInterruptDevice;
+        _periodicInterruptInterval = periodicInterruptInterval;
     }
 
     public bool IsInVirtualMode => (registers[(int)Register.FR] & 0b0100) != 0;
@@ -38,11 +40,11 @@ public class Processor
             
             var executeCommand = Decoder.DecodeOperation(instruction);
             executeCommand(this, _ram);
-            
-            if (hardwareInterruptDevice.IsInterrupted())
+
+            var interruptCode = _hardwareInterruptDevice.TryGetInterruptCode();
+            if (interruptCode.HasValue)
             {
-                var interruptCode = hardwareInterruptDevice.GetInterruptCode();
-                MachineStateOperations.INT(this, _ram, interruptCode);
+                MachineStateOperations.INT(this, _ram, interruptCode.Value);
             }
         }
     }
@@ -50,12 +52,10 @@ public class Processor
     [DoesNotReturn]
     private void RunPeriodicInterruptTimer()
     {
-        var interval = TimeSpan.FromMilliseconds(4);
-        
         while (true)
         {
-            Thread.Sleep(interval);
-            hardwareInterruptDevice.Interrupt(InterruptCodes.PeriodicInterrupt);
+            Thread.Sleep(_periodicInterruptInterval);
+            _hardwareInterruptDevice.Interrupt(InterruptCodes.PeriodicInterrupt);
         }
     }
 

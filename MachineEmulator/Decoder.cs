@@ -112,6 +112,8 @@ namespace MachineEmulator
                 return (proc, ram) => MemoryOperations.PUSHALL(proc, ram);
             if (opCode == 0x01340000)
                 return (proc, ram) => MemoryOperations.POPALL(proc, ram);
+            if (opCode == 0x01350000)
+                return (proc, ram) => MemoryOperations.POPINT(proc, ram);
 
             if ((opCode & 0xFFFFFC00) == 0x01300000) {
                 Register reg1 = DecodeRegister((opCode & 0x000003E0) >> 5);
