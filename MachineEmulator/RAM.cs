@@ -30,7 +30,8 @@ public class RAM : IDisposable
             FileStream stream = File.Open(_snapshotFilePath, FileMode.Create);
             byte[] writeData = new byte[SizeConstants.MB64];
             Buffer.BlockCopy(Data, 0, writeData, 0, (int)SizeConstants.MB64);
-            stream.Write(writeData, 0, (int)SizeConstants.MB64);   
+            stream.Write(writeData, 0, (int)SizeConstants.MB64);
+            stream.Close();
         }
     }
     
