@@ -1,1 +1,5 @@
+PUSH r1
+MOVD r1 1
+SUB r6 r1
+POP r1
 POPINT
