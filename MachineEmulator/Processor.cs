@@ -2,7 +2,6 @@
 using MachineEmulator.Constants;
 using MachineEmulator.Enums;
 using MachineEmulator.Operations;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MachineEmulator;
 
@@ -45,11 +44,9 @@ public class Processor : IDisposable
     {
         registers[(int)Register.PC] = 0x508;
 
-        var periodicInterruptTimer = new Thread(RunPeriodicInterruptTimer);
-        periodicInterruptTimer.Start();
-
-        var outputTerminalWatcher = new Thread(WatchTerminalOutput);
-        outputTerminalWatcher.Start();
+        new Thread(WatchTerminalOutput).Start();
+        new Thread(WatchKeyboardInput).Start();
+        new Thread(RunPeriodicInterruptTimer).Start();
         
         while (true)
         {
@@ -76,16 +73,27 @@ public class Processor : IDisposable
             _hardwareInterruptDevice.Interrupt(InterruptCodes.PeriodicInterrupt);
         }
     }
-
+    
     [DoesNotReturn]
-    private void WatchTerminalOutput() {
-        while(true) 
+    private void WatchTerminalOutput()
+    {
+        while (true) 
         {
             var terminalValue = _ram.GetByte(MemoryLocations.TerminalOutput);
             if (terminalValue != 0) {
                 Console.Write((char)terminalValue);
                 _ram.SetByte(MemoryLocations.TerminalOutput, 0);
             }
+        }
+    }
+
+    [DoesNotReturn]
+    private void WatchKeyboardInput()
+    {
+        while (true)
+        {
+            var key = Console.ReadKey();
+            _ram.SetByte(MemoryLocations.KeyboardInput, (byte)key.KeyChar);
         }
     }
 }
