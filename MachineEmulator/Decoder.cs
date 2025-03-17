@@ -12,7 +12,7 @@ namespace MachineEmulator
                 uint literal = opCode & 0x00FFFFFF;
                 return (proc, ram) => MemoryOperations.MOVD(proc, ram, reg, literal);
             }
-            if ((opCode & 0xFFFE0000) == 0x02000000) {
+            if ((opCode & 0xFFFC0000) == 0x02000000) {
                 return DecodeLoadOrStoreOperation(opCode);
             }
             if ((opCode & 0xFFF00000) == 0x01000000) {
