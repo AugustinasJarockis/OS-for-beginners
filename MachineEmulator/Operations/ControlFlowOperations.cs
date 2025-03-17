@@ -53,7 +53,7 @@ namespace MachineEmulator.Operations
             }
         }
         public static void RET(Processor proc, RAM ram) {
-            uint address = proc.registers[(int)Register.SP];
+            uint address = ram.GetDWord(proc.registers[(int)Register.SP]);
             proc.registers[(int)Register.PC] = address;
             proc.registers[(int)Register.SP] += 4;
         }
