@@ -13,7 +13,7 @@ public class MachineStateOperations
         
         MemoryOperations.PUSHALL(proc, ram);
         if (proc.IsInVirtualMode)
-            HALT(proc, ram);
+            EXIT(proc, ram);
         
         proc.registers[(int)Register.R3] = r3Override;
         proc.registers[(int)Register.PC] = ram.GetDWord(4 * (ulong)interruptCode);
@@ -31,7 +31,7 @@ public class MachineStateOperations
         }
     }
 
-    public static void HALT(Processor proc, RAM ram)
+    public static void EXIT(Processor proc, RAM ram)
     {
         if (proc.IsInVirtualMode)
         {
