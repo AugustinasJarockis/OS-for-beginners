@@ -146,8 +146,6 @@ namespace MachineEmulator
 
             if (opCode == 0x01410000)
                 return (proc, ram) => MachineStateOperations.ENTER(proc, ram);
-            if (opCode == 0x01420000)
-                return (proc, ram) => MachineStateOperations.EXIT(proc, ram);
             if (opCode == 0x01430000)
                 return (proc, ram) => MachineStateOperations.HALT(proc, ram);
 

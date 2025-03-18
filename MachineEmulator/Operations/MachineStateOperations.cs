@@ -7,12 +7,15 @@ public class MachineStateOperations
 {
     public static void INT(Processor proc, RAM ram, byte interruptCode)
     {
-        if (proc.IsInVirtualMode)
-        {
-            EXIT(proc, ram);
-        }
+        var r3Override = proc.registers[(int)Register.R3];
+        if (interruptCode == InterruptCodes.TerminalOutput)
+            r3Override = (uint)proc.GetPhysicalRamAddress(proc.registers[(int)Register.R3])!.Value;
         
         MemoryOperations.PUSHALL(proc, ram);
+        if (proc.IsInVirtualMode)
+            HALT(proc, ram);
+        
+        proc.registers[(int)Register.R3] = r3Override;
         proc.registers[(int)Register.PC] = ram.GetDWord(4 * (ulong)interruptCode);
     }
         
@@ -28,7 +31,7 @@ public class MachineStateOperations
         }
     }
 
-    public static void EXIT(Processor proc, RAM ram)
+    public static void HALT(Processor proc, RAM ram)
     {
         if (proc.IsInVirtualMode)
         {
@@ -40,11 +43,5 @@ public class MachineStateOperations
         {
             INT(proc, ram, InterruptCodes.InvalidOpCode);
         }
-    }
-        
-    public static void HALT(Processor proc, RAM ram)
-    {
-        EXIT(proc, ram);
-        // TODO: do something more; maybe call an interrupt?
     }
 }

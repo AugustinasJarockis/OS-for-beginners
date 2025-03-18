@@ -1,5 +1,4 @@
 ﻿using MachineEmulator.Enums;
-using System.Net;
 
 namespace MachineEmulator.Operations
 {
@@ -53,7 +52,7 @@ namespace MachineEmulator.Operations
             }
         }
         public static void RET(Processor proc, RAM ram) {
-            uint address = ram.GetDWord(proc.registers[(int)Register.SP]);
+            uint address = proc.GetDWordFromRam(proc.registers[(int)Register.SP])!.Value;
             proc.registers[(int)Register.PC] = address;
             proc.registers[(int)Register.SP] += 4;
         }
