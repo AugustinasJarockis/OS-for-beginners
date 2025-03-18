@@ -71,7 +71,7 @@ public static class MachineCodeAssembler
     private static uint GetInstructionOperandCount(string mnemonic) =>
         mnemonic switch
         {
-            "RET" or "PUSHALL" or "POPALL" or "ENTER" or "EXIT" or "HALT" or "POPINT" => 0,
+            "RET" or "PUSHALL" or "POPALL" or "ENTER" or "EXIT" or "POPINT" => 0,
             "NEG"
             or "JMP"
             or "JC"
@@ -141,7 +141,6 @@ public static class MachineCodeAssembler
             "INT" => 0b0000_0001_0100_0000,
             "ENTER" => 0b0000_0001_0100_0001,
             "EXIT" => 0b0000_0001_0100_0010,
-            "HALT" => 0b0000_0001_0100_0011,
             _ => throw new ArgumentOutOfRangeException(
                 nameof(mnemonic),
                 $"Invalid mnemonic: {mnemonic}"

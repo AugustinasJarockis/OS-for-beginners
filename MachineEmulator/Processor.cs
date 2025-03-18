@@ -64,6 +64,75 @@ public class Processor : IDisposable
         }
     }
 
+    public void SetByteInRam(ulong address, byte value)
+    {
+        var physicalAddress = GetPhysicalRamAddress(address);
+        if (physicalAddress.HasValue)
+        {
+            _ram.SetByte(physicalAddress.Value, value);
+        }
+        else
+        {
+            MachineStateOperations.INT(this, _ram, InterruptCodes.PageFault);
+        }
+    }
+
+    public uint? GetByteFromRam(ulong address)
+    {
+        var physicalAddress = GetPhysicalRamAddress(address);
+        if (physicalAddress.HasValue)
+        {
+            return _ram.GetDWord(physicalAddress.Value);
+        }
+        
+        MachineStateOperations.INT(this, _ram, InterruptCodes.PageFault);
+        return null;
+    }
+    
+    public void SetDWordInRam(ulong address, uint value)
+    {
+        var physicalAddress = GetPhysicalRamAddress(address);
+        if (physicalAddress.HasValue)
+        {
+            _ram.SetDWord(physicalAddress.Value, value);
+        }
+        else
+        {
+            MachineStateOperations.INT(this, _ram, InterruptCodes.PageFault);
+        }
+    }
+
+    public uint? GetDWordFromRam(ulong address)
+    {
+        var physicalAddress = GetPhysicalRamAddress(address);
+        if (physicalAddress.HasValue)
+        {
+            return _ram.GetDWord(physicalAddress.Value);
+        }
+
+        MachineStateOperations.INT(this, _ram, InterruptCodes.PageFault);
+        return null;
+    }
+    
+    public ulong? GetPhysicalRamAddress(ulong address)
+    {
+        if (!IsInVirtualMode)
+        {
+            return address;
+        }
+        
+        const uint pageSize = 4096;
+        var pageNumber = address / pageSize;
+        var pageTableEntryAddress = registers[(int)Register.PTBR] + pageNumber * 4;
+        var pageTableEntry = _ram.GetDWord(pageTableEntryAddress);
+        if ((pageTableEntry & 1) == 0)
+        {
+            return null;
+        }
+        
+        return (pageTableEntry & 0xFFFFFFFE) + (address % pageSize);
+    }
+
     [DoesNotReturn]
     private void RunPeriodicInterruptTimer()
     {
