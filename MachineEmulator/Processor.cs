@@ -120,17 +120,27 @@ public class Processor : IDisposable
         {
             return address;
         }
-        
+
         const uint pageSize = 4096;
-        var pageNumber = address / pageSize;
-        var pageTableEntryAddress = registers[(int)Register.PTBR] + pageNumber * 4;
+        var virtualPageNumber = address / pageSize;
+        var pageTableLength = _ram.GetDWord(registers[(int)Register.PTBR]);
+        if (virtualPageNumber > pageTableLength - 1)
+        {
+            return null;
+        }
+        
+        var pageTableEntryAddress = registers[(int)Register.PTBR] + 4 + virtualPageNumber * 4;
         var pageTableEntry = _ram.GetDWord(pageTableEntryAddress);
         if ((pageTableEntry & 1) == 0)
         {
             return null;
         }
+
+        var physicalPageNumber = pageTableEntry & 0xFFFFFFFE;
+        var physicalAddress = physicalPageNumber * pageSize;
+        var offsetInPage = address % pageSize;
         
-        return (pageTableEntry & 0xFFFFFFFE) + (address % pageSize);
+        return physicalAddress + offsetInPage;
     }
 
     [DoesNotReturn]

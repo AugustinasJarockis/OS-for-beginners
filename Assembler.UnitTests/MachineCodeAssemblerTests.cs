@@ -34,7 +34,7 @@ public class MachineCodeAssemblerTests
         foreach (var line in File.ReadLines(filePath))
         {
             var instructionMachineCode = Convert.ToInt32(line, 2);
-            machineCode.AddRange(instructionMachineCode);
+            machineCode.Add(instructionMachineCode);
         }
 
         return machineCode;

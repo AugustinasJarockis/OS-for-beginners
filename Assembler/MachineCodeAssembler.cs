@@ -9,7 +9,7 @@ public static class MachineCodeAssembler
         foreach (var instruction in File.ReadLines(filePath))
         {
             var instructionMachineCode = InstructionToMachineCode(instruction);
-            machineCode.AddRange(instructionMachineCode);
+            machineCode.Add(instructionMachineCode);
         }
 
         return machineCode;

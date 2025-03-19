@@ -11,9 +11,10 @@ public class MachineStateOperations
         if (interruptCode == InterruptCodes.TerminalOutput)
             r3Override = (uint)proc.GetPhysicalRamAddress(proc.registers[(int)Register.R3])!.Value;
         
-        MemoryOperations.PUSHALL(proc, ram);
         if (proc.IsInVirtualMode)
             EXIT(proc, ram);
+        
+        MemoryOperations.PUSHALL(proc, ram);
         
         proc.registers[(int)Register.R3] = r3Override;
         proc.registers[(int)Register.PC] = ram.GetDWord(4 * (ulong)interruptCode);
