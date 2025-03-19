@@ -24,7 +24,8 @@ static void LoadInterruptHandlers(RAM ram)
         [4] = 0x10400,
         [5] = 0x10500,
         [6] = 0x10600,
-        [7] = 0x10700
+        [7] = 0x10700,
+        [8] = 0x10800,
     };
 
     foreach (var (interruptCode, handlerAddress) in addressByInterruptCode)
@@ -37,6 +38,14 @@ static void LoadInterruptHandlers(RAM ram)
         {
             ram.SetDWord((ulong)(handlerAddress + i * 4), machineCode[i]);
         }
+    }
+
+    string registerMessage = "R0: \0\0\0\0\0\0\0\0 | R1: \0\0\0\0\0\0\0\0 | R2: \0\0\0\0\0\0\0\0 | R3: \0\0\0\0\0\0\0\0 | R4: \0\0\0\0\0\0\0\0 | " + 
+        "R5: \0\0\0\0\0\0\0\0 | R6: \0\0\0\0\0\0\0\0 | R7: \0\0\0\0\0\0\0\0 | " +
+        "SP: \0\0\0\0\0\0\0\0 | PC: \0\0\0\0\0\0\0\0 | FR: \0\0\0\0\0\0\0\0 | PTBR: \0\0\0\0\0\0\0\0;\n\0";
+
+    for (int i = 0; i < registerMessage.Length; i++) {
+        ram.SetByte(0x10A04 + (ulong)i, (byte)registerMessage[i]);
     }
 }
 

@@ -9,6 +9,8 @@ namespace MachineEmulator
         public static Action<Processor, RAM> DecodeOperation(uint opCode) {
             if ((opCode & 0xE0000000) == 0x20000000) { // MOV literal alternative
                 Register reg = DecodeRegister((opCode & 0x1F000000) >> 24);
+                if (reg == Register.Unknown)
+                    return (proc, ram) => MachineStateOperations.INT(proc, ram, InterruptCodes.InvalidOpCode);
                 uint literal = opCode & 0x00FFFFFF;
                 return (proc, ram) => MemoryOperations.MOVD(proc, ram, reg, literal);
             }

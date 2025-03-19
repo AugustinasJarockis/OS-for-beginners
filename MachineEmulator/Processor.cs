@@ -82,7 +82,7 @@ public class Processor : IDisposable
         var physicalAddress = GetPhysicalRamAddress(address);
         if (physicalAddress.HasValue)
         {
-            return _ram.GetDWord(physicalAddress.Value);
+            return _ram.GetByte(physicalAddress.Value);
         }
         
         MachineStateOperations.INT(this, _ram, InterruptCodes.PageFault);
