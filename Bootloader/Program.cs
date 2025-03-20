@@ -7,7 +7,7 @@ var programDirectory = Path.Combine(
 Directory.CreateDirectory(programDirectory);
 var ramSnapshotFilePath = Path.Combine(programDirectory, "ramSnapshot.mem");
 
-var ram = new RAM(ramSnapshotFilePath);
+var ram = new RAM(ramSnapshotFilePath, startClear: true);
 AppDomain.CurrentDomain.ProcessExit += (_, _) => ram.Dispose();
 
 LoadInterruptHandlers(ram);
@@ -56,7 +56,7 @@ static void LoadInterruptHandlers(RAM ram)
 
 static void LoadCode(RAM ram)
 {
-    var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "TimeTest.txt");
+    var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "JumpTest.txt");
     var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
     for (var i = 0; i < machineCode.Count; i++)
     {

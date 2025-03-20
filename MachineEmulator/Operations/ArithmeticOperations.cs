@@ -1,4 +1,5 @@
-﻿using MachineEmulator.Enums;
+﻿using MachineEmulator.Constants;
+using MachineEmulator.Enums;
 
 namespace MachineEmulator.Operations
 {
@@ -22,7 +23,7 @@ namespace MachineEmulator.Operations
         }
         public static void DIV(Processor proc, RAM ram, Register reg1, Register reg2) {
             if (proc.registers[(int)reg2] == 0) {
-                throw new NotImplementedException(); //TODO: IMPLEMENT DIV IS NULIO
+                MachineStateOperations.INT(proc, ram, InterruptCodes.DivByZero);
                 return;
             }
             long result = (int)proc.registers[(int)reg1] / (int)proc.registers[(int)reg2];

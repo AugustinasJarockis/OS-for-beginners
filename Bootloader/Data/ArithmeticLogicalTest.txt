@@ -1,0 +1,7 @@
+﻿INT 8
+MOVD r3 248
+MOVD r4 15
+AND r3 r4
+INT 8
+MOVD r5 1308
+JMP r5
