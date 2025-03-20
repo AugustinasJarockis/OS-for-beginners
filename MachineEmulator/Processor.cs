@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using MachineEmulator.Constants;
 using MachineEmulator.Enums;
 using MachineEmulator.Operations;
@@ -47,6 +48,7 @@ public class Processor : IDisposable
         new Thread(WatchTerminalOutput).Start();
         new Thread(WatchKeyboardInput).Start();
         new Thread(RunPeriodicInterruptTimer).Start();
+        new Thread(TrackTime).Start();
         
         while (true)
         {
@@ -143,6 +145,13 @@ public class Processor : IDisposable
         return physicalAddress + offsetInPage;
     }
 
+    [DoesNotReturn]
+    private void TrackTime() {
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        while (true) {
+            _ram.SetDWord(0x412, (uint)stopwatch.Elapsed.TotalMilliseconds);
+        }
+    }
     [DoesNotReturn]
     private void RunPeriodicInterruptTimer()
     {
