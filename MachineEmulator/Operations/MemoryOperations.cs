@@ -31,11 +31,11 @@ namespace MachineEmulator.Operations
             proc.registers[(int)Register.SP] += 4;
         }
         public static void PUSHALL(Processor proc, RAM ram) {
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 11; i++)
                 PUSH(proc, ram, (Register)i);
         }
         public static void POPALL(Processor proc, RAM ram) {
-            for (int i = 8; i >= 0; i--)
+            for (int i = 10; i >= 0; i--)
                 POP(proc, ram, (Register)i);
         }
         public static void POPINT(Processor proc, RAM ram) {
