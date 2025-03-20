@@ -16,6 +16,9 @@
       <None Update="Data\code.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+	  <None Update="Data\FunctionTest.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
       <None Update="Data\InterruptHandlers\0.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
