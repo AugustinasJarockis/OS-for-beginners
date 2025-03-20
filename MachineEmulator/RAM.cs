@@ -11,12 +11,12 @@ public class RAM : IDisposable
         Data = new uint[SizeConstants.RAM_SIZE];
     }
 
-    public RAM(string filePath)
+    public RAM(string filePath, bool startClear = false)
     {
         Data = new uint[SizeConstants.RAM_SIZE];
         _snapshotFilePath = filePath;
         
-        if (File.Exists(filePath))
+        if (!startClear && File.Exists(filePath))
         {
             byte[] fileData = File.ReadAllBytes(filePath);
             Buffer.BlockCopy(fileData, 0, Data, 0, fileData.Length);
