@@ -1,0 +1,5 @@
+﻿MOVD r1 1042
+LOAD r4 r1
+INT 8
+MOVD r6 1288
+JMP r6

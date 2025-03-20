@@ -40,6 +40,11 @@ static void LoadInterruptHandlers(RAM ram)
         }
     }
 
+    string periodicMessage = "Periodic interrupt...\n";
+    for (int i = 0; i < periodicMessage.Length; i++) {
+        ram.SetByte(0x10550 + (ulong)i, (byte)periodicMessage[i]);
+    }
+
     string registerMessage = "R0: \0\0\0\0\0\0\0\0 | R1: \0\0\0\0\0\0\0\0 | R2: \0\0\0\0\0\0\0\0 | R3: \0\0\0\0\0\0\0\0 | R4: \0\0\0\0\0\0\0\0 | " + 
         "R5: \0\0\0\0\0\0\0\0 | R6: \0\0\0\0\0\0\0\0 | R7: \0\0\0\0\0\0\0\0 | " +
         "SP: \0\0\0\0\0\0\0\0 | PC: \0\0\0\0\0\0\0\0 | FR: \0\0\0\0\0\0\0\0 | PTBR: \0\0\0\0\0\0\0\0;\n\0";
@@ -51,7 +56,7 @@ static void LoadInterruptHandlers(RAM ram)
 
 static void LoadCode(RAM ram)
 {
-    var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "code.txt");
+    var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "TimeTest.txt");
     var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
     for (var i = 0; i < machineCode.Count; i++)
     {
