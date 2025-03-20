@@ -56,7 +56,7 @@ static void LoadInterruptHandlers(RAM ram)
 
 static void LoadCode(RAM ram)
 {
-    var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "JumpTest.txt");
+    var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "MovTest.txt");
     var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
     for (var i = 0; i < machineCode.Count; i++)
     {
