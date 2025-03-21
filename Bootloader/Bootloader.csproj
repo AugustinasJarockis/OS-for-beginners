@@ -16,18 +16,30 @@
       <None Update="Data\code.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-	    <None Update="Data\TimeTest.txt">
+	  <None Update="Data\MovTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+	  <None Update="Data\PushPopTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+	  <None Update="Data\LoadStoreTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\PushAllPopAllTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+	  <None Update="Data\TimeTest.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-	    <None Update="Data\FunctionTest.txt">
+	  <None Update="Data\FunctionTest.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-	    <None Update="Data\ArithmeticLogicalTest.txt">
-	      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	    </None>
+	  <None Update="Data\ArithmeticLogicalTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
       <None Update="Data\JumpTest.txt">
 		    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	    </None>
+	  </None>
       <None Update="Data\InterruptHandlers\0.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
