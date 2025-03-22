@@ -19,7 +19,8 @@ public class RAM : IDisposable
         if (!startClear && File.Exists(filePath))
         {
             byte[] fileData = File.ReadAllBytes(filePath);
-            Buffer.BlockCopy(fileData, 0, Data, 0, fileData.Length);
+            Buffer.BlockCopy(fileData, 0, Data, 0, (int)SizeConstants.MB64);
+            Buffer.BlockCopy(fileData, (int)SizeConstants.MB64, Data, 0x40000000, (int)SizeConstants.MB64);
         }
     }
     
@@ -28,9 +29,14 @@ public class RAM : IDisposable
         if (_snapshotFilePath is not null)
         {
             FileStream stream = File.Open(_snapshotFilePath, FileMode.Create);
-            byte[] writeData = new byte[SizeConstants.MB64];
+            byte[] writeData = new byte[2 * SizeConstants.MB64];
+            
             Buffer.BlockCopy(Data, 0, writeData, 0, (int)SizeConstants.MB64);
             stream.Write(writeData, 0, (int)SizeConstants.MB64);
+            
+            Buffer.BlockCopy(Data, 0x40000000, writeData, (int)SizeConstants.MB64, (int)SizeConstants.MB64);
+            stream.Write(writeData, (int)SizeConstants.MB64, (int)SizeConstants.MB64);
+            
             stream.Close();
         }
     }
