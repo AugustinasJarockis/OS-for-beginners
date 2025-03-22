@@ -17,7 +17,7 @@ var interruptDevice = new HardwareInterruptDevice();
 var processor = new Processor(
     ram,
     interruptDevice,
-    periodicInterruptInterval: TimeSpan.FromSeconds(10),
+    periodicInterruptInterval: TimeSpan.FromSeconds(1),
     registerSnapshotFilePath
     );
 AppDomain.CurrentDomain.ProcessExit += (_, _) => processor.Dispose();

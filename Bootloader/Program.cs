@@ -39,6 +39,11 @@ static void LoadInterruptHandlers(RAM ram)
             ram.SetDWord((ulong)(handlerAddress + i * 4), machineCode[i]);
         }
     }
+    
+    string keyPressedMessage = ": key pressed\n";
+    for (int i = 0; i < keyPressedMessage.Length; i++) {
+        ram.SetByte(0x10150 + (ulong)i, (byte)keyPressedMessage[i]);
+    }
 
     string periodicMessage = "Periodic interrupt...\n";
     for (int i = 0; i < periodicMessage.Length; i++) {
