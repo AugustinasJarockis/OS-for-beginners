@@ -52,10 +52,13 @@ public class Processor : IDisposable
         
         while (true)
         {
-            var instruction = _ram.GetDWord(registers[(int)Register.PC]);
-            registers[(int)Register.PC] += 4;
+            var instruction = GetDWordFromRam(registers[(int)Register.PC]);
+            if (!instruction.HasValue)
+                continue;
             
-            var executeCommand = Decoder.DecodeOperation(instruction);
+            registers[(int)Register.PC] += 4;
+
+            var executeCommand = Decoder.DecodeOperation(instruction.Value);
             executeCommand(this, _ram);
 
             var interruptCode = _hardwareInterruptDevice.TryGetInterruptCode();

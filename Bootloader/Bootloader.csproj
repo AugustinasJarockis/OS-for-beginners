@@ -67,6 +67,24 @@
 	  <None Update="Data\InterruptHandlers\8.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+	  <None Update="Data\VmMovTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\RmForVm.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\VmFunctionTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\VmHaltTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\VmLoadStoreTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\VmPageFaultTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
     </ItemGroup>
 
 </Project>

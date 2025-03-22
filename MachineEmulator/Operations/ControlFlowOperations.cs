@@ -52,9 +52,11 @@ namespace MachineEmulator.Operations
             }
         }
         public static void RET(Processor proc, RAM ram) {
-            uint address = proc.GetDWordFromRam(proc.registers[(int)Register.SP])!.Value;
-            proc.registers[(int)Register.PC] = address;
-            proc.registers[(int)Register.SP] += 4;
+            var address = proc.GetDWordFromRam(proc.registers[(int)Register.SP]);
+            if (address.HasValue) {
+                proc.registers[(int)Register.PC] = address.Value;
+                proc.registers[(int)Register.SP] += 4;
+            }
         }
         public static void CALL(Processor proc, RAM ram, Register reg) {
             MemoryOperations.PUSH(proc, ram, Register.PC);

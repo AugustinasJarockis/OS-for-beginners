@@ -9,13 +9,24 @@ public class MachineStateOperations
     {
         var r3Override = proc.registers[(int)Register.R3];
         if (interruptCode == InterruptCodes.TerminalOutput)
-            r3Override = (uint)proc.GetPhysicalRamAddress(proc.registers[(int)Register.R3])!.Value;
-        
+        {
+            var address = proc.GetPhysicalRamAddress(proc.registers[(int)Register.R3]);
+            if (!address.HasValue)
+                return;
+            
+            r3Override = (uint)address.Value;
+        }
+
         if (proc.IsInVirtualMode)
-            EXIT(proc, ram);
+        {
+            ram.SetDWord(0x396, proc.registers[(int)Register.PC]);
+            ram.SetDWord(0x404, proc.registers[(int)Register.SP]);
+            proc.registers[(int)Register.SP] = ram.GetDWord(0x400);
+        }
         
-        MemoryOperations.PUSHALL(proc, ram);
-        MemoryOperations.PUSH(proc, ram, Register.PC);
+        MemoryOperations.PUSHALL(proc, ram, ignoreMode: true);
+        MemoryOperations.PUSH(proc, ram, Register.PC, ignoreMode: true);
+        FlagUtils.ClearModeFlag(proc);
         
         proc.registers[(int)Register.R3] = r3Override;
         proc.registers[(int)Register.PC] = ram.GetDWord(4 * (ulong)interruptCode);
@@ -29,15 +40,16 @@ public class MachineStateOperations
         }
         else
         {
+            proc.registers[(int)Register.PC] = ram.GetDWord(0x396);
             FlagUtils.SetModeFlag(proc);
         }
     }
 
-    public static void EXIT(Processor proc, RAM ram)
+    public static void HALT(Processor proc, RAM ram)
     {
         if (proc.IsInVirtualMode)
         {
-            ram.SetDWord(0x404, proc.registers[(int)Register.SP]);
+            proc.registers[(int)Register.PC] = ram.GetDWord(0x392);
             proc.registers[(int)Register.SP] = ram.GetDWord(0x400);
             FlagUtils.ClearModeFlag(proc);
         }

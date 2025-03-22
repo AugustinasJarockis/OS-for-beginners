@@ -11,7 +11,7 @@ var ram = new RAM(ramSnapshotFilePath, startClear: true);
 AppDomain.CurrentDomain.ProcessExit += (_, _) => ram.Dispose();
 
 LoadInterruptHandlers(ram);
-LoadCode(ram);
+LoadCode(ram, "VmPageFaultTest.txt", withVm: true);
 
 static void LoadInterruptHandlers(RAM ram)
 {
@@ -40,6 +40,11 @@ static void LoadInterruptHandlers(RAM ram)
         }
     }
 
+    string invalidOpCode = "Page fault...\n";
+    for (int i = 0; i < invalidOpCode.Length; i++) {
+        ram.SetByte(0x10350 + (ulong)i, (byte)invalidOpCode[i]);
+    }
+
     string periodicMessage = "Periodic interrupt...\n";
     for (int i = 0; i < periodicMessage.Length; i++) {
         ram.SetByte(0x10550 + (ulong)i, (byte)periodicMessage[i]);
@@ -54,12 +59,31 @@ static void LoadInterruptHandlers(RAM ram)
     }
 }
 
-static void LoadCode(RAM ram)
+static void LoadCode(RAM ram, string fileName, bool withVm = false)
 {
-    var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "MovTest.txt");
-    var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
-    for (var i = 0; i < machineCode.Count; i++)
+    if (withVm)
     {
-        ram.SetDWord((ulong)(0x508 + i * 4), machineCode[i]);
+        var rmFilePath = Path.Join(Environment.CurrentDirectory, "Data", "RmForVm.txt");
+        var rmMachineCode = MachineCodeAssembler.ToMachineCode(rmFilePath);
+        for (var i = 0; i < rmMachineCode.Count; i++)
+        {
+            ram.SetDWord((ulong)(0x508 + i * 4), rmMachineCode[i]);
+        }
+        
+        var vmFilePath = Path.Join(Environment.CurrentDirectory, "Data", fileName);
+        var vmMachineCode = MachineCodeAssembler.ToMachineCode(vmFilePath);
+        for (var i = 0; i < vmMachineCode.Count; i++)
+        {
+            ram.SetDWord((ulong)(0x40000000 + i * 4), vmMachineCode[i]);
+        }
+    }
+    else
+    {
+        var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", fileName);
+        var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
+        for (var i = 0; i < machineCode.Count; i++)
+        {
+            ram.SetDWord((ulong)(0x508 + i * 4), machineCode[i]);
+        }
     }
 }
