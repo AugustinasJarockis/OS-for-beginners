@@ -185,6 +185,7 @@ public class Processor : IDisposable
         {
             var key = Console.ReadKey();
             _ram.SetByte(MemoryLocations.KeyboardInput, (byte)key.KeyChar);
+            _hardwareInterruptDevice.Interrupt(InterruptCodes.KeyboardInput);
         }
     }
 }
