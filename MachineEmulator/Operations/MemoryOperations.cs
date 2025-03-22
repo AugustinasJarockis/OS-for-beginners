@@ -64,8 +64,8 @@ namespace MachineEmulator.Operations
                 POPALL(proc, ram, ignoreMode: true);
 
                 if (proc.IsInVirtualMode) {
-                    proc.registers[(int)Register.PC] = ram.GetDWord(0x396);
-                    proc.registers[(int)Register.SP] = ram.GetDWord(0x404);
+                    proc.registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.VMPC);
+                    proc.registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.VMSP);
                 }
             }
         }

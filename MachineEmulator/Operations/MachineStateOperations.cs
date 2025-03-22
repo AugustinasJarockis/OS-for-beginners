@@ -19,9 +19,9 @@ public class MachineStateOperations
 
         if (proc.IsInVirtualMode)
         {
-            ram.SetDWord(0x396, proc.registers[(int)Register.PC]);
-            ram.SetDWord(0x404, proc.registers[(int)Register.SP]);
-            proc.registers[(int)Register.SP] = ram.GetDWord(0x400);
+            ram.SetDWord(MemoryLocations.VMPC, proc.registers[(int)Register.PC]);
+            ram.SetDWord(MemoryLocations.VMSP, proc.registers[(int)Register.SP]);
+            proc.registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.RMSP);
         }
         
         MemoryOperations.PUSHALL(proc, ram, ignoreMode: true);
@@ -40,11 +40,11 @@ public class MachineStateOperations
         }
         else
         {
-            ram.SetDWord(0x392, proc.registers[(int)Register.PC]);
-            ram.SetDWord(0x400, proc.registers[(int)Register.SP]);
+            ram.SetDWord(MemoryLocations.RMPC, proc.registers[(int)Register.PC]);
+            ram.SetDWord(MemoryLocations.RMSP, proc.registers[(int)Register.SP]);
 
-            proc.registers[(int)Register.PC] = ram.GetDWord(0x396);
-            proc.registers[(int)Register.SP] = ram.GetDWord(0x404);
+            proc.registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.VMPC);
+            proc.registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.VMSP);
             
             FlagUtils.SetModeFlag(proc);
         }
@@ -54,8 +54,8 @@ public class MachineStateOperations
     {
         if (proc.IsInVirtualMode)
         {
-            proc.registers[(int)Register.PC] = ram.GetDWord(0x392);
-            proc.registers[(int)Register.SP] = ram.GetDWord(0x400);
+            proc.registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.RMPC);
+            proc.registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.RMSP);
             FlagUtils.ClearModeFlag(proc);
         }
         else

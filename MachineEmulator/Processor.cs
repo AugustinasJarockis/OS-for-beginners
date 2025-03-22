@@ -43,7 +43,7 @@ public class Processor : IDisposable
     [DoesNotReturn]
     public void Run()
     {
-        registers[(int)Register.PC] = 0x508;
+        registers[(int)Register.PC] = MemoryLocations.Code;
 
         new Thread(WatchTerminalOutput).Start();
         new Thread(WatchKeyboardInput).Start();
@@ -152,7 +152,7 @@ public class Processor : IDisposable
     private void TrackTime() {
         Stopwatch stopwatch = Stopwatch.StartNew();
         while (true) {
-            _ram.SetDWord(0x412, (uint)stopwatch.Elapsed.TotalMilliseconds);
+            _ram.SetDWord(MemoryLocations.Time, (uint)stopwatch.Elapsed.TotalMilliseconds);
         }
     }
     [DoesNotReturn]
