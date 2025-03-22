@@ -40,9 +40,19 @@ static void LoadInterruptHandlers(RAM ram)
         }
     }
     
+    string divByZeroMessage = "Div by zero\n";
+    for (int i = 0; i < divByZeroMessage.Length; i++) {
+        ram.SetByte(0x10050 + (ulong)i, (byte)divByZeroMessage[i]);
+    }
+    
     string keyPressedMessage = ": key pressed\n";
     for (int i = 0; i < keyPressedMessage.Length; i++) {
         ram.SetByte(0x10150 + (ulong)i, (byte)keyPressedMessage[i]);
+    }
+
+    string invalidOpCodeMessage = "Invalid opcode\n";
+    for (int i = 0; i < invalidOpCodeMessage.Length; i++) {
+        ram.SetByte(0x10250 + (ulong)i, (byte)invalidOpCodeMessage[i]);
     }
 
     string invalidOpCode = "Page fault...\n";

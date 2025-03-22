@@ -70,6 +70,12 @@
 	  <None Update="Data\KeyboardTest.txt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	  <None Update="Data\InvalidOpCodeTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Data\DivByZeroTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	  <None Update="Data\VmMovTest.txt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
