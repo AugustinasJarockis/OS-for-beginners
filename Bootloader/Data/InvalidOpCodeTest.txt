@@ -1,0 +1,4 @@
+MOVD r1 4
+ADD fr r1
+MOVD r1 1296
+JMP r1

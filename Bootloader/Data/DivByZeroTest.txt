@@ -1,0 +1,6 @@
+MOVD r2 5
+MOVD r3 0
+INT 8
+DIV r2 r3
+MOVD r1 1304
+JMP r1
