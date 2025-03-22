@@ -11,7 +11,7 @@ var ram = new RAM(ramSnapshotFilePath, startClear: true);
 AppDomain.CurrentDomain.ProcessExit += (_, _) => ram.Dispose();
 
 LoadInterruptHandlers(ram);
-LoadCode(ram, "VmPageFaultTest.txt", withVm: true);
+LoadCode(ram, "VmHaltTest.txt", withVm: true);
 
 static void LoadInterruptHandlers(RAM ram)
 {

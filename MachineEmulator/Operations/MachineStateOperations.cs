@@ -40,7 +40,12 @@ public class MachineStateOperations
         }
         else
         {
+            ram.SetDWord(0x392, proc.registers[(int)Register.PC]);
+            ram.SetDWord(0x400, proc.registers[(int)Register.SP]);
+
             proc.registers[(int)Register.PC] = ram.GetDWord(0x396);
+            proc.registers[(int)Register.SP] = ram.GetDWord(0x404);
+            
             FlagUtils.SetModeFlag(proc);
         }
     }
