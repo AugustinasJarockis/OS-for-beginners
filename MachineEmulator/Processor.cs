@@ -14,12 +14,19 @@ public class Processor : IDisposable
 
     private readonly RAM _ram;
     private readonly HardwareInterruptDevice _hardwareInterruptDevice;
+    private readonly ExternalStorage _externalStorage;
     private readonly TimeSpan _periodicInterruptInterval;
     
-    public Processor(RAM ram, HardwareInterruptDevice hardwareInterruptDevice, TimeSpan periodicInterruptInterval, string? filePath = null)
+    public Processor(
+        RAM ram,
+        HardwareInterruptDevice hardwareInterruptDevice,
+        ExternalStorage externalStorage,
+        TimeSpan periodicInterruptInterval,
+        string? filePath = null)
     {
         _ram = ram;
         _hardwareInterruptDevice = hardwareInterruptDevice;
+        _externalStorage = externalStorage;
         _periodicInterruptInterval = periodicInterruptInterval;
         _snapshotFilePath = filePath;
         if (filePath != null && File.Exists(filePath)) {
@@ -47,6 +54,8 @@ public class Processor : IDisposable
 
         new Thread(WatchTerminalOutput).Start();
         new Thread(WatchKeyboardInput).Start();
+        new Thread(WatchWriteToExternalStorage).Start();
+        new Thread(WatchReadFromExternalStorage).Start();
         new Thread(RunPeriodicInterruptTimer).Start();
         new Thread(TrackTime).Start();
         
@@ -155,6 +164,7 @@ public class Processor : IDisposable
             _ram.SetDWord(MemoryLocations.Time, (uint)stopwatch.Elapsed.TotalMilliseconds);
         }
     }
+    
     [DoesNotReturn]
     private void RunPeriodicInterruptTimer()
     {
@@ -186,6 +196,43 @@ public class Processor : IDisposable
             var key = Console.ReadKey();
             _ram.SetByte(MemoryLocations.KeyboardInput, (byte)key.KeyChar);
             _hardwareInterruptDevice.Interrupt(InterruptCodes.KeyboardInput);
+        }
+    }
+
+    [DoesNotReturn]
+    private void WatchWriteToExternalStorage()
+    {
+        while (true)
+        {
+            var indicatorByte = _ram.GetByte(0x12003);
+            if ((indicatorByte & 1) == 0)
+                continue;
+            
+            var blockNumber = _ram.GetDWord(0x12000) & 0xFFFFFFFE;
+            var data = new uint[ExternalStorage.BLOCK_SIZE];
+            for (var i = 0; i < ExternalStorage.BLOCK_SIZE; i++)
+                data[i] = _ram.GetDWord((uint)(0x12004 + i));
+                
+            _externalStorage.WriteBlock(blockNumber, data);
+            _ram.SetByte(0x12003, (byte)(indicatorByte - 1));
+        }
+    }
+
+    [DoesNotReturn]
+    private void WatchReadFromExternalStorage()
+    {
+        while (true)
+        {
+            var indicatorByte = _ram.GetByte(0x13007);
+            if ((indicatorByte & 1) == 0)
+                continue;
+            
+            var blockNumber = _ram.GetDWord(0x13004) & 0xFFFFFFFE;
+            var data = _externalStorage.ReadBlock(blockNumber);
+            for (var i = 0; i < data.Length; i++)
+                _ram.SetDWord((uint)(0x13008 + i), data[i]);
+            
+            _ram.SetByte(0x13007, (byte)(indicatorByte - 1));
         }
     }
 }

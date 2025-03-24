@@ -8,7 +8,10 @@ public class MachineStateOperations
     public static void INT(Processor proc, RAM ram, byte interruptCode)
     {
         var r3Override = proc.registers[(int)Register.R3];
-        if (interruptCode == InterruptCodes.TerminalOutput)
+        if (interruptCode
+            is InterruptCodes.TerminalOutput
+            or InterruptCodes.WriteToExternalStorage
+            or InterruptCodes.ReadFromExternalStorage)
         {
             var address = proc.GetPhysicalRamAddress(proc.registers[(int)Register.R3]);
             if (!address.HasValue)
