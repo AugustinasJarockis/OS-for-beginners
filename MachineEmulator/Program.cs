@@ -13,13 +13,15 @@ var ram = new RAM(ramSnapshotFilePath);
 AppDomain.CurrentDomain.ProcessExit += (_, _) => ram.Dispose();
 
 var interruptDevice = new HardwareInterruptDevice();
+var externalStorage = new ExternalStorage();
 
 var processor = new Processor(
     ram,
     interruptDevice,
+    externalStorage,
     periodicInterruptInterval: TimeSpan.FromSeconds(1),
     registerSnapshotFilePath
-    );
+);
 AppDomain.CurrentDomain.ProcessExit += (_, _) => processor.Dispose();
 
 processor.Run();

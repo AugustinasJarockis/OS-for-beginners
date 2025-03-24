@@ -94,6 +94,9 @@
 	  <None Update="Data\VmPageFaultTest.txt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	  <None Update="Data\ExternalStorageTest.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
     </ItemGroup>
 
 </Project>
