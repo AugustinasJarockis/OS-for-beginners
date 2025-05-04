@@ -1,2 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using OperatingSystem.ProcessManagement;
+using OperatingSystem.ResourceManagement;
+
+var resourceManager = new ResourceManager();
+var processManager = new ProcessManager(resourceManager);
+
+processManager.CreateProcess("notepad.txt");
