@@ -8,7 +8,7 @@ public class Process
     public Process? Parent { get; private set; }
     public List<Process> Children { get; private set; }
     public byte BasePriority { get; private set; }
-    public byte Priority { get; private set; }
+    public byte Priority { get; set; }
     public bool IsRunning => State == ProcessState.Running;
 
     private Process()
