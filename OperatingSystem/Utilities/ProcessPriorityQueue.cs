@@ -26,15 +26,14 @@ namespace OperatingSystem.Utilities
             }
         }
 
-        public Process Deenqueue() {
+        public Process Dequeue() {
             Process removedProcess = queue.Last();
             queue.Remove(queue.Last());
             return removedProcess;
         }
 
         public void Remove(Process process) {
-            if (queue.Contains(process))
-                queue.Remove(process);
+            queue.Remove(process);
         }
 
         public void RemoveAllNotReady() {
