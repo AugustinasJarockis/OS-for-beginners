@@ -1,4 +1,5 @@
 using OperatingSystem.ResourceManagement;
+using OperatingSystem.Utilities;
 
 namespace OperatingSystem.ProcessManagement;
 
@@ -6,6 +7,7 @@ public class ProcessManager
 {
     private readonly ResourceManager _resourceManager;
     private readonly List<Process> _processes;
+    private readonly ProcessPriorityQueue _processQueue;
     
     private Process? _currentProcess;
 
@@ -13,6 +15,7 @@ public class ProcessManager
     {
         _resourceManager = resourceManager;
         _processes = [];
+        _processQueue = new();
         _currentProcess = null;
     }
     
@@ -115,6 +118,21 @@ public class ProcessManager
 
     private void Schedule()
     {
-        // TODO: implement scheduler algorithm
+        _processQueue.Enqueue(_currentProcess!);
+        
+        _processQueue.RemoveAllNotReady();
+        foreach (var process in _processes) {
+            if (process.State == ProcessState.Ready 
+                && !_processQueue.Contains(process)
+                ) {
+                _processQueue.Enqueue(process);
+            }
+        }
+
+        _currentProcess = _processQueue.Deenqueue();
+
+        _processQueue.IncrementPriorities();
+
+        //TODO: Run current process somehow
     }
 }
