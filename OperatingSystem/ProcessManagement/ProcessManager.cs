@@ -129,10 +129,10 @@ public class ProcessManager
             }
         }
 
-        _currentProcess = _processQueue.Deenqueue();
+        _currentProcess = _processQueue.Dequeue();
 
         _processQueue.IncrementPriorities();
 
-        //TODO: Run current process somehow
+        _currentProcess.Run();
     }
 }
