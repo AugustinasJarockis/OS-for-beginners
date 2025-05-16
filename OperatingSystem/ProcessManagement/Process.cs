@@ -11,6 +11,8 @@ public class Process
     public byte Priority { get; set; }
     public bool IsRunning => State == ProcessState.Running;
 
+    public ProcessProgram Program { get; private set; }
+
     private Process()
     {
     }
@@ -27,6 +29,12 @@ public class Process
             Priority = 0,
             State = ProcessState.ReadySuspended
         };
+    }
+
+    public void Run() {
+        State = ProcessState.Running;
+        this.Program.Proceed();
+        State = ProcessState.Ready;
     }
     
     public void Suspend()
