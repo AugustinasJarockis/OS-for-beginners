@@ -7,13 +7,13 @@ public class MachineStateOperations
 {
     public static void INT(Processor proc, RAM ram, byte interruptCode)
     {
-        var r3Override = proc.Registers[(int)Register.R3];
+        var r3Override = proc.registers[(int)Register.R3];
         if (interruptCode
             is InterruptCodes.TerminalOutput
             or InterruptCodes.WriteToExternalStorage
             or InterruptCodes.ReadFromExternalStorage)
         {
-            var address = proc.GetPhysicalRamAddress(proc.Registers[(int)Register.R3]);
+            var address = proc.GetPhysicalRamAddress(proc.registers[(int)Register.R3]);
             if (!address.HasValue)
                 return;
             
@@ -22,17 +22,17 @@ public class MachineStateOperations
 
         if (proc.IsInVirtualMode)
         {
-            ram.SetDWord(MemoryLocations.VMPC, proc.Registers[(int)Register.PC]);
-            ram.SetDWord(MemoryLocations.VMSP, proc.Registers[(int)Register.SP]);
-            proc.Registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.RMSP);
+            ram.SetDWord(MemoryLocations.VMPC, proc.registers[(int)Register.PC]);
+            ram.SetDWord(MemoryLocations.VMSP, proc.registers[(int)Register.SP]);
+            proc.registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.RMSP);
         }
         
         MemoryOperations.PUSHALL(proc, ram, ignoreMode: true);
         MemoryOperations.PUSH(proc, ram, Register.PC, ignoreMode: true);
         FlagUtils.ClearModeFlag(proc);
         
-        proc.Registers[(int)Register.R3] = r3Override;
-        proc.Registers[(int)Register.PC] = ram.GetDWord(4 * (ulong)interruptCode);
+        proc.registers[(int)Register.R3] = r3Override;
+        proc.registers[(int)Register.PC] = ram.GetDWord(4 * (ulong)interruptCode);
 
         proc.OnInterrupt(interruptCode);
     }
@@ -45,11 +45,11 @@ public class MachineStateOperations
         }
         else
         {
-            ram.SetDWord(MemoryLocations.RMPC, proc.Registers[(int)Register.PC]);
-            ram.SetDWord(MemoryLocations.RMSP, proc.Registers[(int)Register.SP]);
+            ram.SetDWord(MemoryLocations.RMPC, proc.registers[(int)Register.PC]);
+            ram.SetDWord(MemoryLocations.RMSP, proc.registers[(int)Register.SP]);
 
-            proc.Registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.VMPC);
-            proc.Registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.VMSP);
+            proc.registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.VMPC);
+            proc.registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.VMSP);
             
             FlagUtils.SetModeFlag(proc);
         }
@@ -59,8 +59,8 @@ public class MachineStateOperations
     {
         if (proc.IsInVirtualMode)
         {
-            proc.Registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.RMPC);
-            proc.Registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.RMSP);
+            proc.registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.RMPC);
+            proc.registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.RMSP);
             FlagUtils.ClearModeFlag(proc);
         }
         else

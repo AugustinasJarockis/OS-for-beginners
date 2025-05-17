@@ -8,7 +8,7 @@ namespace OperatingSystem.Hardware;
 
 public class Processor
 {
-    public readonly uint[] Registers = new uint[12];
+    public readonly uint[] registers = new uint[12];
     public readonly Action<byte> OnInterrupt;
 
     private readonly RAM _ram;
@@ -30,7 +30,7 @@ public class Processor
         OnInterrupt = onInterrupt;
     }
 
-    public bool IsInVirtualMode => (Registers[(int)Register.FR] & 0b0100) != 0;
+    public bool IsInVirtualMode => (registers[(int)Register.FR] & 0b0100) != 0;
 
     public void Start()
     {
@@ -44,11 +44,11 @@ public class Processor
 
     public void Step()
     {
-        var instruction = GetDWordFromRam(Registers[(int)Register.PC]);
+        var instruction = GetDWordFromRam(registers[(int)Register.PC]);
         if (!instruction.HasValue)
             return;
         
-        Registers[(int)Register.PC] += 4;
+        registers[(int)Register.PC] += 4;
     
         var executeCommand = Decoder.DecodeOperation(instruction.Value);
         executeCommand(this, _ram);
@@ -119,13 +119,13 @@ public class Processor
 
         const uint pageSize = 4096;
         var virtualPageNumber = address / pageSize;
-        var pageTableLength = _ram.GetDWord(Registers[(int)Register.PTBR]);
+        var pageTableLength = _ram.GetDWord(registers[(int)Register.PTBR]);
         if (virtualPageNumber > pageTableLength - 1)
         {
             return null;
         }
         
-        var pageTableEntryAddress = Registers[(int)Register.PTBR] + 4 + virtualPageNumber * 4;
+        var pageTableEntryAddress = registers[(int)Register.PTBR] + 4 + virtualPageNumber * 4;
         var pageTableEntry = _ram.GetDWord(pageTableEntryAddress);
         if ((pageTableEntry & 1) == 0)
         {
