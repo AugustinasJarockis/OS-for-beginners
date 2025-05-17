@@ -1,8 +1,8 @@
-using OperatingSystem.ResourceManagement.Resources;
+using OperatingSystem.ResourceManagement.ResourceParts;
 
 namespace OperatingSystem.ResourceManagement.Schedulers;
 
-public interface IResourceScheduler<TPart>
+public interface IResourceScheduler<TPart> where TPart : ResourcePart
 {
-    void Run(Resource<TPart> resource);
+    List<ushort> Run(Resource<TPart> resource);
 }

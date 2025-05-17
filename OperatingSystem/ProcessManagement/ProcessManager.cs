@@ -1,32 +1,33 @@
-using OperatingSystem.ResourceManagement;
 using OperatingSystem.Utilities;
 
 namespace OperatingSystem.ProcessManagement;
 
 public class ProcessManager
 {
-    private readonly ResourceManager _resourceManager;
     private readonly List<Process> _processes;
     private readonly ProcessPriorityQueue _processQueue;
     
-    private Process? _currentProcess;
+    private Process _currentProcess;
 
-    public ProcessManager(ResourceManager resourceManager)
+    public ushort CurrentProcessId => _currentProcess?.Id ?? 0;
+
+    public ProcessManager()
     {
-        _resourceManager = resourceManager;
         _processes = [];
         _processQueue = new();
-        _currentProcess = null;
     }
     
-    public void CreateProcess(string processName)
+    public void CreateProcess(string processName, ProcessProgram processProgram)
     {
         // TODO: add resources
         var process = Process.Create(
             id: AllocateProcessId(),
             name: processName,
+            program: processProgram,
             parent: _currentProcess
         );
+
+        _currentProcess = process;
         
         _processes.Add(process);
     }
@@ -37,33 +38,16 @@ public class ProcessManager
         Schedule();
     }
 
-    public void SuspendProcess(string processName)
+    public void SuspendProcess(ushort processId)
     {
-        var process = FindProcessByName(processName);
-        if (process is null)
-        {
-            return; // TODO: error?
-        }
-
-        if (process.IsRunning)
-        {
-            ReleaseProcessor(process);
-        }
-        
+        var process = _processes.First(x => x.Id == processId);
         process.Suspend();
-        Schedule();
     }
     
-    public void ActivateProcess(string processName)
+    public void ActivateProcess(ushort processId)
     {
-        var process = FindProcessByName(processName);
-        if (process is null)
-        {
-            return; // TODO: error?
-        }
-
+        var process = _processes.First(x => x.Id == processId);
         process.Activate();
-        Schedule();
     }
 
     private void KillProcessRecursively(string processName)
@@ -72,11 +56,6 @@ public class ProcessManager
         if (process is null)
         {
             return; // TODO: error?
-        }
-
-        if (process.IsRunning)
-        {
-            ReleaseProcessor(process);
         }
         
         // TODO: release resources
@@ -111,27 +90,23 @@ public class ProcessManager
         return _processes.FirstOrDefault(x => x.Name == processName);
     }
 
-    private void ReleaseProcessor(Process process)
+    public void Schedule()
     {
-        _resourceManager.ReleaseResource(ResourceNames.Processor);
-    }
+        // TODO: this algorithm does not work - fix it
+        // _processQueue.Enqueue(_currentProcess!);
+        //
+        // _processQueue.RemoveAllNotReady();
+        // foreach (var process in _processes) {
+        //     if (process.State == ProcessState.Ready 
+        //         && !_processQueue.Contains(process)
+        //         ) {
+        //         _processQueue.Enqueue(process);
+        //     }
+        // }
 
-    private void Schedule()
-    {
-        _processQueue.Enqueue(_currentProcess!);
-        
-        _processQueue.RemoveAllNotReady();
-        foreach (var process in _processes) {
-            if (process.State == ProcessState.Ready 
-                && !_processQueue.Contains(process)
-                ) {
-                _processQueue.Enqueue(process);
-            }
-        }
+        // _currentProcess = _processQueue.Dequeue();
 
-        _currentProcess = _processQueue.Dequeue();
-
-        _processQueue.IncrementPriorities();
+        // _processQueue.IncrementPriorities();
 
         _currentProcess.Run();
     }
