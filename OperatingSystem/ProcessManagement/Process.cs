@@ -34,8 +34,10 @@ public class Process
 
     public void Run() {
         State = ProcessState.Running;
-        Program.Proceed();
-        State = ProcessState.Ready;
+        while (State == ProcessState.Running)
+        {
+            Program.Step();
+        }
     }
     
     public void Suspend()
@@ -44,6 +46,7 @@ public class Process
         {
             ProcessState.Ready => ProcessState.ReadySuspended,
             ProcessState.Blocked => ProcessState.BlockedSuspended,
+            ProcessState.Running => ProcessState.Blocked,
             _ => State
         };
     }
@@ -54,6 +57,7 @@ public class Process
         {
             ProcessState.ReadySuspended => ProcessState.Ready,
             ProcessState.BlockedSuspended => ProcessState.Blocked,
+            ProcessState.Blocked => ProcessState.Ready,
             _ => State
         };
     }

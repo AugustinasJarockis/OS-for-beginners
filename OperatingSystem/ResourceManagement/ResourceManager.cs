@@ -33,6 +33,12 @@ public class ResourceManager
     {
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         resource.AvailableParts.Add(part);
+        
+        var pidsGrantedResource = resource.RunScheduler();
+        foreach (var pid in pidsGrantedResource)
+        {
+            _processManager.ActivateProcess(pid);
+        }
     }
 
     public void RequestResource(string resourceName, string partName)
@@ -62,6 +68,12 @@ public class ResourceManager
     {
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         var part = resource.AvailableParts.First(x => x.Name == partName);
+
+        if (part.IsSingleUse)
+        {
+            resource.AvailableParts.Remove(part);
+        }
+        
         return part;
     }
 }

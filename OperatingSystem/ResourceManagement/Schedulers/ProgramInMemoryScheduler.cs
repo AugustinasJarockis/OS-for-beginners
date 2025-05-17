@@ -6,6 +6,18 @@ public class ProgramInMemoryScheduler : IResourceScheduler<ProgramInMemoryData>
 {
     public List<ushort> Run(Resource<ProgramInMemoryData> resource)
     {
-        return [resource.Requesters.First().ProcessId];
+        List<ushort> pidsGrantedResource = [];
+        var availablePartNames = resource.AvailableParts.Select(x => x.Name).ToList();
+        
+        foreach (var requester in resource.Requesters)
+        {
+            if (availablePartNames.Contains(requester.PartName))
+            {
+                pidsGrantedResource.Add(requester.ProcessId);
+                availablePartNames.Remove(requester.PartName);
+            }
+        }
+
+        return pidsGrantedResource;
     }
 }

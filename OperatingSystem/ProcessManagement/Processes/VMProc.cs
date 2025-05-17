@@ -7,12 +7,14 @@ public class VMProc : ProcessProgram
 {
     private readonly Guid _jobGovernorGuid;
     private readonly string _machineCode;
+    private readonly ProcessManager _processManager;
     private readonly ResourceManager _resourceManager;
 
-    public VMProc(Guid jobGovernorGuid, string machineCode, ResourceManager resourceManager)
+    public VMProc(Guid jobGovernorGuid, string machineCode, ProcessManager processManager, ResourceManager resourceManager)
     {
         _jobGovernorGuid = jobGovernorGuid;
         _machineCode = machineCode;
+        _processManager = processManager;
         _resourceManager = resourceManager;
     }
     
@@ -28,10 +30,13 @@ public class VMProc : ProcessProgram
                     new InterruptData
                     {
                         Name = nameof(InterruptData),
+                        IsSingleUse = true,
                         JobGovernorGuid = _jobGovernorGuid,
                         InterruptCode = 4
                     }
                 );
+                
+                _processManager.SuspendProcess(_processManager.CurrentProcessId);
 
                 return 0;
             }

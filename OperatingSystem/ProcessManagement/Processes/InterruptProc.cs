@@ -1,6 +1,5 @@
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
-using OperatingSystem.ResourceManagement.Schedulers;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -34,7 +33,8 @@ public class InterruptProc : ProcessProgram
                 var data = new JobGovernorInterruptData
                 {
                     Name = $"{nameof(JobGovernorInterruptData)}_{_interruptData.JobGovernorGuid}",
-                    InterruptCode = _interruptData.InterruptCode
+                    InterruptCode = _interruptData.InterruptCode,
+                    IsSingleUse = true
                 };
                 
                 _resourceManager.AddResourcePart(ResourceNames.JobGovernorInterrupt, data);

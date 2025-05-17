@@ -26,7 +26,8 @@ public class StartStopProc : ProcessProgram
                     new ProgramInMemoryData
                     {
                         Name = nameof(ProgramInMemoryData),
-                        MachineCode = ""
+                        MachineCode = "",
+                        IsSingleUse = true
                     }
                 ], new ProgramInMemoryScheduler());
                 _resourceManager.CreateResource(ResourceNames.Interrupt, [], new InterruptScheduler());
