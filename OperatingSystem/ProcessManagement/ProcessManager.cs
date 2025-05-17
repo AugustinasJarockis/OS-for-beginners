@@ -19,7 +19,11 @@ public class ProcessManager
     
     public void CreateProcess(string processName, ProcessProgram processProgram)
     {
-        // TODO: add resources
+        if (_processes.Any(x => x.Name == processName))
+        {
+            throw new InvalidOperationException($"Process with such name already exists: {processName}");
+        }
+        
         var process = Process.Create(
             id: AllocateProcessId(),
             name: processName,
