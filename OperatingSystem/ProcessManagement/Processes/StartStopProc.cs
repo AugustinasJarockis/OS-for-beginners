@@ -1,3 +1,4 @@
+using OperatingSystem.Hardware;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
 using OperatingSystem.ResourceManagement.Schedulers;
@@ -8,11 +9,19 @@ public class StartStopProc : ProcessProgram
 {
     private readonly ProcessManager _processManager;
     private readonly ResourceManager _resourceManager;
+    private readonly Processor _processor;
+    private readonly RAM _ram;
 
-    public StartStopProc(ProcessManager processManager, ResourceManager resourceManager)
+    public StartStopProc(
+        ProcessManager processManager,
+        ResourceManager resourceManager,
+        Processor processor,
+        RAM ram)
     {
         _processManager = processManager;
         _resourceManager = resourceManager;
+        _processor = processor;
+        _ram = ram;
     }
     
     protected override int Next()
@@ -22,18 +31,10 @@ public class StartStopProc : ProcessProgram
             case 0:
             {
                 _resourceManager.CreateResource(ResourceNames.OsShutdown, [], new OsShutdownScheduler());
-                _resourceManager.CreateResource(ResourceNames.ProgramInMemory, [
-                    new ProgramInMemoryData
-                    {
-                        Name = nameof(ProgramInMemoryData),
-                        MachineCode = "",
-                        IsSingleUse = true
-                    }
-                ], new ProgramInMemoryScheduler());
                 _resourceManager.CreateResource(ResourceNames.Interrupt, [], new InterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.JobGovernorInterrupt, [], new JobGovernorInterruptScheduler());
                 
-                _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager));
+                _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _ram));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
 

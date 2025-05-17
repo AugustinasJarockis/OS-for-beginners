@@ -7,9 +7,8 @@ public class ProcessManager
     private readonly List<Process> _processes;
     private readonly ProcessPriorityQueue _processQueue;
     
-    private Process? _currentProcess;
-
-    public ushort CurrentProcessId => _currentProcess!.Id;
+    public Process CurrentProcess { get; private set; }
+    public ushort CurrentProcessId => CurrentProcess.Id;
 
     public ProcessManager()
     {
@@ -17,7 +16,7 @@ public class ProcessManager
         _processQueue = new();
     }
     
-    public void CreateProcess(string processName, ProcessProgram processProgram)
+    public ushort CreateProcess(string processName, ProcessProgram processProgram)
     {
         if (_processes.Any(x => x.Name == processName))
         {
@@ -28,18 +27,19 @@ public class ProcessManager
             id: AllocateProcessId(),
             name: processName,
             program: processProgram,
-            parent: _currentProcess
+            parent: CurrentProcess
         );
 
-        _currentProcess ??= process;
+        CurrentProcess ??= process;
 
         _processes.Add(process);
+        
+        return process.Id;
     }
-
+    
     public void KillProcess(string processName)
     {
         KillProcessRecursively(processName);
-        Schedule();
     }
 
     public void SuspendProcess(ushort processId)
@@ -52,6 +52,29 @@ public class ProcessManager
     {
         var process = _processes.First(x => x.Id == processId);
         process.Activate();
+    }
+    
+    public void Schedule()
+    {
+        while (true)
+        {
+            _processQueue.Enqueue(CurrentProcess);
+
+            _processQueue.RemoveAllNotReady();
+            foreach (var process in _processes) {
+                if (process.State == ProcessState.Ready
+                    && !_processQueue.Contains(process)
+                   ) {
+                    _processQueue.Enqueue(process);
+                }
+            }
+
+            CurrentProcess = _processQueue.Dequeue();
+
+            _processQueue.IncrementPriorities();
+
+            CurrentProcess.Run();
+        }
     }
 
     private void KillProcessRecursively(string processName)
@@ -92,28 +115,5 @@ public class ProcessManager
     private Process? FindProcessByName(string processName)
     {
         return _processes.FirstOrDefault(x => x.Name == processName);
-    }
-
-    public void Schedule()
-    {
-        while (true)
-        {
-            _processQueue.Enqueue(_currentProcess!);
-
-            _processQueue.RemoveAllNotReady();
-            foreach (var process in _processes) {
-                if (process.State == ProcessState.Ready
-                    && !_processQueue.Contains(process)
-                    ) {
-                    _processQueue.Enqueue(process);
-                }
-            }
-
-            _currentProcess = _processQueue.Dequeue();
-
-            _processQueue.IncrementPriorities();
-
-            _currentProcess.Run();
-        }
     }
 }

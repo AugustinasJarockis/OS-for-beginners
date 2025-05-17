@@ -6,47 +6,47 @@ namespace OperatingSystem.Hardware.Operations
     class MemoryOperations
     {
         public static void LOAD(Processor proc, RAM ram, Register reg1, Register reg2) {
-            var value = proc.GetDWordFromRam(proc.registers[(int)reg2]);
+            var value = proc.GetDWordFromRam(proc.Registers[(int)reg2]);
             if (value.HasValue)
-                proc.registers[(int)reg1] = value.Value;
+                proc.Registers[(int)reg1] = value.Value;
         }
         public static void STORE(Processor proc, RAM ram, Register reg1, Register reg2) {
-            proc.SetDWordInRam(proc.registers[(int)reg2], proc.registers[(int)reg1]);
+            proc.SetDWordInRam(proc.Registers[(int)reg2], proc.Registers[(int)reg1]);
         }
         public static void LOADB(Processor proc, RAM ram, Register reg1, Register reg2) {
-            var value = proc.GetByteFromRam(proc.registers[(int)reg2]);
+            var value = proc.GetByteFromRam(proc.Registers[(int)reg2]);
             if (value.HasValue)
-                proc.registers[(int)reg1] = value.Value;
+                proc.Registers[(int)reg1] = value.Value;
         }
         public static void STOREB(Processor proc, RAM ram, Register reg1, Register reg2) {
-            proc.SetByteInRam(proc.registers[(int)reg2], (byte)(proc.registers[(int)reg1] & 0xFF));
+            proc.SetByteInRam(proc.Registers[(int)reg2], (byte)(proc.Registers[(int)reg1] & 0xFF));
         }
         public static void MOV(Processor proc, RAM ram, Register reg1, Register reg2) {
-            proc.registers[(int)reg1] = proc.registers[(int)reg2];
+            proc.Registers[(int)reg1] = proc.Registers[(int)reg2];
         }
         public static void MOVD(Processor proc, RAM ram, Register reg, uint literal) {
-            proc.registers[(int)reg] = literal;
+            proc.Registers[(int)reg] = literal;
         }
         public static void PUSH(Processor proc, RAM ram, Register reg, bool ignoreMode = false) {
-            proc.registers[(int)Register.SP] -= 4;
+            proc.Registers[(int)Register.SP] -= 4;
             
             if (ignoreMode)
-                ram.SetDWord(proc.registers[(int)Register.SP], proc.registers[(int)reg]);
+                ram.SetDWord(proc.Registers[(int)Register.SP], proc.Registers[(int)reg]);
             else
-                proc.SetDWordInRam(proc.registers[(int)Register.SP], proc.registers[(int)reg]);
+                proc.SetDWordInRam(proc.Registers[(int)Register.SP], proc.Registers[(int)reg]);
         }
         public static void POP(Processor proc, RAM ram, Register reg, bool ignoreMode = false) {
             if (ignoreMode) {
-                proc.registers[(int)reg] = ram.GetDWord(proc.registers[(int)Register.SP]);
+                proc.Registers[(int)reg] = ram.GetDWord(proc.Registers[(int)Register.SP]);
             } else {
-                var value = proc.GetDWordFromRam(proc.registers[(int)Register.SP]);
+                var value = proc.GetDWordFromRam(proc.Registers[(int)Register.SP]);
                 if (!value.HasValue)
                     return;
                 
-                proc.registers[(int)reg] = value.Value;
+                proc.Registers[(int)reg] = value.Value;
             }
             
-            proc.registers[(int)Register.SP] += 4;
+            proc.Registers[(int)Register.SP] += 4;
         }
         public static void PUSHALL(Processor proc, RAM ram, bool ignoreMode = false) {
             for (int i = 0; i < 11; i++)
@@ -64,8 +64,8 @@ namespace OperatingSystem.Hardware.Operations
                 POPALL(proc, ram, ignoreMode: true);
 
                 if (proc.IsInVirtualMode) {
-                    proc.registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.VMPC);
-                    proc.registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.VMSP);
+                    proc.Registers[(int)Register.PC] = ram.GetDWord(MemoryLocations.VMPC);
+                    proc.Registers[(int)Register.SP] = ram.GetDWord(MemoryLocations.VMSP);
                 }
             }
         }
