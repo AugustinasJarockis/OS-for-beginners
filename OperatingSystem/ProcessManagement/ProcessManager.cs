@@ -7,9 +7,9 @@ public class ProcessManager
     private readonly List<Process> _processes;
     private readonly ProcessPriorityQueue _processQueue;
     
-    private Process _currentProcess;
+    private Process? _currentProcess;
 
-    public ushort CurrentProcessId => _currentProcess?.Id ?? 0;
+    public ushort CurrentProcessId => _currentProcess!.Id;
 
     public ProcessManager()
     {
@@ -19,7 +19,11 @@ public class ProcessManager
     
     public void CreateProcess(string processName, ProcessProgram processProgram)
     {
-        // TODO: add resources
+        if (_processes.Any(x => x.Name == processName))
+        {
+            throw new InvalidOperationException($"Process with such name already exists: {processName}");
+        }
+        
         var process = Process.Create(
             id: AllocateProcessId(),
             name: processName,
@@ -27,8 +31,8 @@ public class ProcessManager
             parent: _currentProcess
         );
 
-        _currentProcess = process;
-        
+        _currentProcess ??= process;
+
         _processes.Add(process);
     }
 
@@ -92,21 +96,24 @@ public class ProcessManager
 
     public void Schedule()
     {
-        _processQueue.Enqueue(_currentProcess!);
+        while (true)
+        {
+            _processQueue.Enqueue(_currentProcess!);
 
-        _processQueue.RemoveAllNotReady();
-        foreach (var process in _processes) {
-            if (process.State == ProcessState.Ready
-                && !_processQueue.Contains(process)
-                ) {
-                _processQueue.Enqueue(process);
+            _processQueue.RemoveAllNotReady();
+            foreach (var process in _processes) {
+                if (process.State == ProcessState.Ready
+                    && !_processQueue.Contains(process)
+                    ) {
+                    _processQueue.Enqueue(process);
+                }
             }
+
+            _currentProcess = _processQueue.Dequeue();
+
+            _processQueue.IncrementPriorities();
+
+            _currentProcess.Run();
         }
-
-        _currentProcess = _processQueue.Dequeue();
-
-        _processQueue.IncrementPriorities();
-
-        _currentProcess.Run();
     }
 }

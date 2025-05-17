@@ -2,10 +2,10 @@ using OperatingSystem.ResourceManagement.ResourceParts;
 
 namespace OperatingSystem.ResourceManagement.Schedulers;
 
-public class MemoryScheduler : IResourceScheduler<MemoryBlock>
+public class MemoryScheduler : ResourceSchedulerBase<MemoryBlock>
 {
-    public List<ushort> Run(Resource<MemoryBlock> resource)
+    public override List<ushort> Run(Resource<MemoryBlock> resource)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("We might need a different implementation for memory. Override if needed.");
     }
 }

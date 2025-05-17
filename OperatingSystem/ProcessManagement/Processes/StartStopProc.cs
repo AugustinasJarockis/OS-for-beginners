@@ -26,7 +26,8 @@ public class StartStopProc : ProcessProgram
                     new ProgramInMemoryData
                     {
                         Name = nameof(ProgramInMemoryData),
-                        MachineCode = ""
+                        MachineCode = "",
+                        IsSingleUse = true
                     }
                 ], new ProgramInMemoryScheduler());
                 _resourceManager.CreateResource(ResourceNames.Interrupt, [], new InterruptScheduler());
@@ -34,6 +35,7 @@ public class StartStopProc : ProcessProgram
                 
                 _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
+                _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
 
                 return CurrentStep + 1;
             }

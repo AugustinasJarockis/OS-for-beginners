@@ -1,6 +1,5 @@
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
-using OperatingSystem.ResourceManagement.Schedulers;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -10,6 +9,8 @@ public class JobGovernorProc : ProcessProgram
     private readonly string _machineCode;
     private readonly ProcessManager _processManager;
     private readonly ResourceManager _resourceManager;
+
+    private JobGovernorInterruptData _interruptData;
 
     public JobGovernorProc(
         Guid guid,
@@ -31,7 +32,7 @@ public class JobGovernorProc : ProcessProgram
             {
                 _processManager.CreateProcess(
                     $"{nameof(VMProc)}_{_guid}",
-                    new VMProc(_guid, _machineCode, _resourceManager)
+                    new VMProc(_guid, _machineCode, _processManager, _resourceManager)
                 );
                 
                 return CurrentStep + 1;
@@ -44,6 +45,15 @@ public class JobGovernorProc : ProcessProgram
                 );
 
                 return CurrentStep + 1;
+            }
+            case 2:
+            {
+                _interruptData = _resourceManager.ReadResource<JobGovernorInterruptData>(
+                    ResourceNames.JobGovernorInterrupt,
+                    $"{nameof(JobGovernorInterruptData)}_{_guid}"
+                );
+
+                return 1;
             }
             default:
                 return 0;

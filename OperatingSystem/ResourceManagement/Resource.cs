@@ -7,7 +7,7 @@ public class Resource<TPart> : IResource where TPart : ResourcePart
 {
     public string Name { get; private init; }
     public List<ResourceRequester> Requesters { get; private init; }
-    public List<TPart> AvailableParts { get; private init; }
+    public List<TPart> Parts { get; private init; }
     public IResourceScheduler<TPart> Scheduler { get; private init; }
 
     private Resource()
@@ -22,7 +22,7 @@ public class Resource<TPart> : IResource where TPart : ResourcePart
         return new Resource<TPart>
         {
             Name = name,
-            AvailableParts = parts,
+            Parts = parts,
             Scheduler = scheduler,
             Requesters = []
         };
