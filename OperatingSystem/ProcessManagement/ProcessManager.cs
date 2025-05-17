@@ -92,21 +92,20 @@ public class ProcessManager
 
     public void Schedule()
     {
-        // TODO: this algorithm does not work - fix it
-        // _processQueue.Enqueue(_currentProcess!);
-        //
-        // _processQueue.RemoveAllNotReady();
-        // foreach (var process in _processes) {
-        //     if (process.State == ProcessState.Ready 
-        //         && !_processQueue.Contains(process)
-        //         ) {
-        //         _processQueue.Enqueue(process);
-        //     }
-        // }
+        _processQueue.Enqueue(_currentProcess!);
 
-        // _currentProcess = _processQueue.Dequeue();
+        _processQueue.RemoveAllNotReady();
+        foreach (var process in _processes) {
+            if (process.State == ProcessState.Ready
+                && !_processQueue.Contains(process)
+                ) {
+                _processQueue.Enqueue(process);
+            }
+        }
 
-        // _processQueue.IncrementPriorities();
+        _currentProcess = _processQueue.Dequeue();
+
+        _processQueue.IncrementPriorities();
 
         _currentProcess.Run();
     }

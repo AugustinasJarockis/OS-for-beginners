@@ -27,7 +27,7 @@ public class Process
             Parent = parent,
             BasePriority = 0, // TODO: maybe set different base priority for different processes
             Priority = 0,
-            State = ProcessState.ReadySuspended,
+            State = ProcessState.Ready,
             Program = program
         };
     }

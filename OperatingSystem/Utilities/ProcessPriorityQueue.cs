@@ -37,9 +37,10 @@ namespace OperatingSystem.Utilities
         }
 
         public void RemoveAllNotReady() {
-            foreach (var process in queue) {
-                if (process.State != ProcessState.Ready) {
-                    queue.Remove(process);
+            for (int i = 0; i < queue.Count; i++) {
+                if (queue[i].State != ProcessState.Ready) {
+                    queue.Remove(queue[i]);
+                    i--;
                 }
             }
         }
