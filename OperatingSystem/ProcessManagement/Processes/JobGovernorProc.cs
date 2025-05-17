@@ -53,7 +53,7 @@ public class JobGovernorProc : ProcessProgram
                     $"{nameof(JobGovernorInterruptData)}_{_guid}"
                 );
 
-                return CurrentStep + 1;
+                return 1;
             }
             default:
                 return 0;
