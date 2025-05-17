@@ -1,0 +1,5 @@
+MOVD r0 15
+MOVD r1 1
+MOV r1 r0
+MOVD r1 12
+JMP r1
