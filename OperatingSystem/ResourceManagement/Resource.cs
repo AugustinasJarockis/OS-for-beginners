@@ -1,10 +1,12 @@
+using OperatingSystem.ResourceManagement.ResourceParts;
 using OperatingSystem.ResourceManagement.Schedulers;
 
-namespace OperatingSystem.ResourceManagement.Resources;
+namespace OperatingSystem.ResourceManagement;
 
-public class Resource<TPart> : IResource
+public class Resource<TPart> : IResource where TPart : ResourcePart
 {
     public string Name { get; private init; }
+    public List<ResourceRequester> Requesters { get; private init; }
     public List<TPart> AvailableParts { get; private init; }
     public IResourceScheduler<TPart> Scheduler { get; private init; }
 
@@ -21,9 +23,10 @@ public class Resource<TPart> : IResource
         {
             Name = name,
             AvailableParts = parts,
-            Scheduler = scheduler
+            Scheduler = scheduler,
+            Requesters = []
         };
     }
 
-    public void RunScheduler() => Scheduler.Run(this);
+    public List<ushort> RunScheduler() => Scheduler.Run(this);
 }

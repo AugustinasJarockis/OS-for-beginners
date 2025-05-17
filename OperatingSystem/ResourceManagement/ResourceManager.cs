@@ -1,4 +1,5 @@
-using OperatingSystem.ResourceManagement.Resources;
+using OperatingSystem.ProcessManagement;
+using OperatingSystem.ResourceManagement.ResourceParts;
 using OperatingSystem.ResourceManagement.Schedulers;
 
 namespace OperatingSystem.ResourceManagement;
@@ -6,16 +7,18 @@ namespace OperatingSystem.ResourceManagement;
 public class ResourceManager
 {
     private readonly List<IResource> _resources;
-
-    public ResourceManager()
+    private readonly ProcessManager _processManager;
+    
+    public ResourceManager(ProcessManager processManager)
     {
+        _processManager = processManager;
         _resources = [];
     }
 
     public void CreateResource<TPart>(
         string resourceName,
         List<TPart> parts,
-        IResourceScheduler<TPart> scheduler)
+        IResourceScheduler<TPart> scheduler) where TPart : ResourcePart
     {
         var resource = Resource<TPart>.Create(
             name: resourceName,
@@ -26,13 +29,39 @@ public class ResourceManager
         _resources.Add(resource);
     }
 
-    public void ReleaseResource(string resourceName)
+    public void AddResourcePart<TPart>(string resourceName, TPart part) where TPart : ResourcePart
     {
-        // TODO: implement
+        var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
+        resource.AvailableParts.Add(part);
     }
 
-    private IResource? FindResourceByName(string resourceName)
+    public void RequestResource(string resourceName, string partName)
     {
-        return _resources.FirstOrDefault(x => x.Name == resourceName);
+        var resource = _resources.First(x => x.Name == resourceName);
+        var currentProcessId = _processManager.CurrentProcessId;
+        
+        resource.Requesters.Add(new ResourceRequester
+        {
+            ProcessId = currentProcessId,
+            PartName = partName
+        });
+
+        var pidsGrantedResource = resource.RunScheduler();
+        foreach (var pid in pidsGrantedResource)
+        {
+            _processManager.ActivateProcess(pid);
+        }
+
+        if (!pidsGrantedResource.Contains(currentProcessId))
+        {
+            _processManager.SuspendProcess(currentProcessId);
+        }
+    }
+
+    public TPart ReadResource<TPart>(string resourceName, string partName) where TPart : ResourcePart
+    {
+        var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
+        var part = resource.AvailableParts.First(x => x.Name == partName);
+        return part;
     }
 }

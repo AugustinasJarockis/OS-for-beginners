@@ -17,7 +17,7 @@ public class Process
     {
     }
 
-    public static Process Create(ushort id, string name, Process? parent)
+    public static Process Create(ushort id, string name, ProcessProgram program, Process? parent)
     {
         return new Process
         {
@@ -27,13 +27,14 @@ public class Process
             Parent = parent,
             BasePriority = 0, // TODO: maybe set different base priority for different processes
             Priority = 0,
-            State = ProcessState.ReadySuspended
+            State = ProcessState.ReadySuspended,
+            Program = program
         };
     }
 
     public void Run() {
         State = ProcessState.Running;
-        this.Program.Proceed();
+        Program.Proceed();
         State = ProcessState.Ready;
     }
     

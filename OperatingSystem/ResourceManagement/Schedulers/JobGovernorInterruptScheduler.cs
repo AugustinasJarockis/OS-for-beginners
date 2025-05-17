@@ -2,9 +2,9 @@ using OperatingSystem.ResourceManagement.ResourceParts;
 
 namespace OperatingSystem.ResourceManagement.Schedulers;
 
-public class MemoryScheduler : IResourceScheduler<MemoryBlock>
+public class JobGovernorInterruptScheduler : IResourceScheduler<JobGovernorInterruptData>
 {
-    public List<ushort> Run(Resource<MemoryBlock> resource)
+    public List<ushort> Run(Resource<JobGovernorInterruptData> resource)
     {
         throw new NotImplementedException();
     }
