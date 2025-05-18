@@ -33,6 +33,8 @@ public class MachineStateOperations
         
         proc.registers[(int)Register.R3] = r3Override;
         proc.registers[(int)Register.PC] = ram.GetDWord(4 * (ulong)interruptCode);
+
+        proc.OnInterrupt(interruptCode);
     }
         
     public static void ENTER(Processor proc, RAM ram)

@@ -1,20 +1,21 @@
-﻿using OperatingSystem.Hardware;
+﻿using Assembler;
+using OperatingSystem.Hardware;
 using OperatingSystem.ProcessManagement;
 using OperatingSystem.ProcessManagement.Processes;
 using OperatingSystem.ResourceManagement;
+using OperatingSystem.ResourceManagement.ResourceParts;
+using OperatingSystem.ResourceManagement.Schedulers;
 
-var ramSnapshotFilePath = Path.Combine(
-    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-    "vuos",
-    "ramSnapshot.mem");
-var registerSnapshotFilePath = Path.Combine(
-    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-    "vuos",
-    "registerSnapshot.mem");
+var processManager = new ProcessManager();
+var resourceManager = new ResourceManager(processManager);
 
-var ram = new RAM(ramSnapshotFilePath);
-AppDomain.CurrentDomain.ProcessExit += (_, _) => ram.Dispose();
+void OnInterrupt(byte interruptCode)
+{
+    var vmProc = (VMProc)processManager.CurrentProcess.Program;
+    vmProc.HandleInterrupt(interruptCode);
+}
 
+var ram = new RAM();
 var interruptDevice = new HardwareInterruptDevice();
 var externalStorage = new ExternalStorage();
 
@@ -23,18 +24,26 @@ var processor = new Processor(
     interruptDevice,
     externalStorage,
     periodicInterruptInterval: TimeSpan.FromSeconds(1),
-    registerSnapshotFilePath
+    OnInterrupt
 );
-AppDomain.CurrentDomain.ProcessExit += (_, _) => processor.Dispose();
 
-processor.Run();
-
-var processManager = new ProcessManager();
-var resourceManager = new ResourceManager(processManager);
+processor.Start();
 
 processManager.CreateProcess(
     nameof(StartStopProc),
-    new StartStopProc(processManager, resourceManager)
+    new StartStopProc(processManager, resourceManager, processor, ram)
 );
+
+var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "test.txt");
+var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
+
+resourceManager.CreateResource(ResourceNames.ProgramInMemory, [
+    new ProgramInMemoryData
+    {
+        Name = nameof(ProgramInMemoryData),
+        MachineCode = machineCode,
+        IsSingleUse = true
+    }
+], new ProgramInMemoryScheduler());
 
 processManager.Schedule();

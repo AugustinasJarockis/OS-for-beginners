@@ -4,7 +4,6 @@ public class Process
 {
     private static readonly TimeSpan PeriodicInterruptInterval = TimeSpan.FromMilliseconds(25);
     
-    private ProcessProgram _program;
     private DateTimeOffset _startedAt;
     
     public ushort Id { get; private set; }
@@ -14,6 +13,7 @@ public class Process
     public List<Process> Children { get; private set; }
     public byte BasePriority { get; private set; }
     public byte Priority { get; set; }
+    public ProcessProgram Program { get; init; }
     
     private Process()
     {
@@ -30,7 +30,7 @@ public class Process
             BasePriority = 0, // TODO: maybe set different base priority for different processes
             Priority = 0,
             State = ProcessState.Ready,
-            _program = program,
+            Program = program,
             _startedAt = DateTimeOffset.MinValue
         };
     }
@@ -41,7 +41,7 @@ public class Process
 
         do
         {
-            _program.Step();
+            Program.Step();
         }
         while (State == ProcessState.Running && _startedAt.Add(PeriodicInterruptInterval) > DateTimeOffset.Now);
         

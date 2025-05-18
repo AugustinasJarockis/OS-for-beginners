@@ -6,11 +6,10 @@ using OperatingSystem.Hardware.Operations;
 
 namespace OperatingSystem.Hardware;
 
-public class Processor : IDisposable
+public class Processor
 {
-    private readonly string? _snapshotFilePath;
-
-    public uint[] registers = new uint[12];
+    public readonly uint[] registers = new uint[12];
+    public readonly Action<byte> OnInterrupt;
 
     private readonly RAM _ram;
     private readonly HardwareInterruptDevice _hardwareInterruptDevice;
@@ -22,59 +21,43 @@ public class Processor : IDisposable
         HardwareInterruptDevice hardwareInterruptDevice,
         ExternalStorage externalStorage,
         TimeSpan periodicInterruptInterval,
-        string? filePath = null)
+        Action<byte> onInterrupt)
     {
         _ram = ram;
         _hardwareInterruptDevice = hardwareInterruptDevice;
         _externalStorage = externalStorage;
         _periodicInterruptInterval = periodicInterruptInterval;
-        _snapshotFilePath = filePath;
-        if (filePath != null && File.Exists(filePath)) {
-            byte[] fileData = File.ReadAllBytes(filePath);
-            Buffer.BlockCopy(fileData, 0, registers, 0, sizeof(uint) * registers.Length);
-        }
-    }
-
-    public void Dispose() {
-        if (_snapshotFilePath is not null) {
-            FileStream stream = File.Open(_snapshotFilePath, FileMode.Create);
-            byte[] writeData = new byte[sizeof(uint) * registers.Length];
-            Buffer.BlockCopy(registers, 0, writeData, 0, sizeof(uint) * registers.Length);
-            stream.Write(writeData, 0, sizeof(uint) * registers.Length);
-            stream.Close();
-        }
+        OnInterrupt = onInterrupt;
     }
 
     public bool IsInVirtualMode => (registers[(int)Register.FR] & 0b0100) != 0;
 
-    public void Run()
+    public void Start()
     {
-        registers[(int)Register.PC] = MemoryLocations.Code;
-
         new Thread(WatchTerminalOutput).Start();
         new Thread(WatchKeyboardInput).Start();
         new Thread(WatchWriteToExternalStorage).Start();
         new Thread(WatchReadFromExternalStorage).Start();
         new Thread(RunPeriodicInterruptTimer).Start();
         new Thread(TrackTime).Start();
+    }
+
+    public void Step()
+    {
+        var instruction = GetDWordFromRam(registers[(int)Register.PC]);
+        if (!instruction.HasValue)
+            return;
         
-        // while (true)
-        // {
-        //     var instruction = GetDWordFromRam(registers[(int)Register.PC]);
-        //     if (!instruction.HasValue)
-        //         continue;
-        //     
-        //     registers[(int)Register.PC] += 4;
-        //
-        //     var executeCommand = Decoder.DecodeOperation(instruction.Value);
-        //     executeCommand(this, _ram);
-        //
-        //     var interruptCode = _hardwareInterruptDevice.TryGetInterruptCode();
-        //     if (interruptCode.HasValue)
-        //     {
-        //         MachineStateOperations.INT(this, _ram, interruptCode.Value);
-        //     }
-        // }
+        registers[(int)Register.PC] += 4;
+    
+        var executeCommand = Decoder.DecodeOperation(instruction.Value);
+        executeCommand(this, _ram);
+    
+        var interruptCode = _hardwareInterruptDevice.TryGetInterruptCode();
+        if (interruptCode.HasValue)
+        {
+            MachineStateOperations.INT(this, _ram, interruptCode.Value);
+        }
     }
 
     public void SetByteInRam(ulong address, byte value)

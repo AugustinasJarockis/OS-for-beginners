@@ -1,3 +1,4 @@
+using OperatingSystem.Hardware;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
 
@@ -7,12 +8,16 @@ public class MainProc : ProcessProgram
 {
     private readonly ResourceManager _resourceManager;
     private readonly ProcessManager _processManager;
+    private readonly Processor _processor;
+    private readonly RAM _ram;
 
     private ProgramInMemoryData _programInMemoryData;
 
-    public MainProc(ProcessManager processManager, ResourceManager resourceManager)
+    public MainProc(ProcessManager processManager, ResourceManager resourceManager, Processor processor, RAM ram)
     {
         _resourceManager = resourceManager;
+        _processor = processor;
+        _ram = ram;
         _processManager = processManager;
     }
 
@@ -46,7 +51,9 @@ public class MainProc : ProcessProgram
                             guid,
                             _programInMemoryData.MachineCode,
                             _processManager,
-                            _resourceManager
+                            _resourceManager,
+                            _processor,
+                            _ram
                         )
                     );
                 }
