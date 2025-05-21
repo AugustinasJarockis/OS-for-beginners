@@ -12,7 +12,7 @@ var resourceManager = new ResourceManager(processManager);
 void OnInterrupt(byte interruptCode)
 {
     var vmProc = (VMProc)processManager.CurrentProcess.Program;
-    vmProc.HandleInterrupt(interruptCode);
+    vmProc.OnInterrupt(interruptCode);
 }
 
 var ram = new RAM();
