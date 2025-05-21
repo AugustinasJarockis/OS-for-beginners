@@ -33,10 +33,12 @@ public class StartStopProc : ProcessProgram
                 _resourceManager.CreateResource(ResourceNames.OsShutdown, [], new OsShutdownScheduler());
                 _resourceManager.CreateResource(ResourceNames.Interrupt, [], new InterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.JobGovernorInterrupt, [], new JobGovernorInterruptScheduler());
+                _resourceManager.CreateResource(ResourceNames.KeyboardInput, [], new KeyboardInputScheduler());
                 
                 _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _ram));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
+                _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager));
 
                 return CurrentStep + 1;
             }

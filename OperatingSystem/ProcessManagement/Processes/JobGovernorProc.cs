@@ -1,4 +1,6 @@
 using OperatingSystem.Hardware;
+using OperatingSystem.Hardware.Constants;
+using OperatingSystem.Hardware.Enums;
 using OperatingSystem.Hardware.Operations;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
@@ -68,10 +70,24 @@ public class JobGovernorProc : ProcessProgram
                     ResourceNames.JobGovernorInterrupt,
                     $"{nameof(JobGovernorInterruptData)}_{_guid}"
                 );
-
+                
                 _processManager.SuspendProcess(_vmPid);
                 
-                Console.WriteLine($"Interrupt occurred: {_interruptData.InterruptCode}");
+                // Console.WriteLine($"Interrupt occurred: {_interruptData.InterruptCode}");
+
+                if (_interruptData.InterruptCode == InterruptCodes.KeyboardInput)
+                {
+                    var key = (char)_ram.GetByte(MemoryLocations.KeyboardInput);
+                    _ram.SetByte(MemoryLocations.KeyboardInput, 0);
+                    _resourceManager.AddResourcePart(
+                        ResourceNames.KeyboardInput,
+                        new KeyboardInputData
+                        {
+                            PressedKey = key,
+                            Name = nameof(KeyboardInputData),
+                            IsSingleUse = true,
+                        });
+                }
                 
                 // TODO: request resources needed for interrupt here
 
@@ -82,7 +98,7 @@ public class JobGovernorProc : ProcessProgram
                 // TODO: read granted resources needed for interrupt handling
                 
                 // TODO: if we failed to handle interrupt, stop the VM
-
+                
                 _processManager.ActivateProcess(_vmPid);
                 
                 return 1;

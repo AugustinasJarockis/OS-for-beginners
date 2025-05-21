@@ -52,7 +52,7 @@ public class Processor
     
         var executeCommand = Decoder.DecodeOperation(instruction.Value);
         executeCommand(this, _ram);
-    
+        
         var interruptCode = _hardwareInterruptDevice.TryGetInterruptCode();
         if (interruptCode.HasValue)
         {
@@ -177,7 +177,7 @@ public class Processor
         {
             var key = Console.ReadKey();
             _ram.SetByte(MemoryLocations.KeyboardInput, (byte)key.KeyChar);
-            _hardwareInterruptDevice.Interrupt(InterruptCodes.KeyboardInput);
+            _hardwareInterruptDevice.Interrupt(InterruptCodes.KeyboardInput);   
         }
     }
 

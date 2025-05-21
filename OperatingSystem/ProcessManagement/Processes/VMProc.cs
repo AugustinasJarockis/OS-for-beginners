@@ -17,7 +17,7 @@ public class VMProc : ProcessProgram
         _processor = processor;
     }
 
-    public void HandleInterrupt(byte interruptCode)
+    public void OnInterrupt(byte interruptCode)
     {
         _resourceManager.AddResourcePart(
             ResourceNames.Interrupt,
