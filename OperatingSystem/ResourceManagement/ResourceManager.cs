@@ -1,6 +1,7 @@
 using OperatingSystem.ProcessManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
 using OperatingSystem.ResourceManagement.Schedulers;
+using Serilog;
 
 namespace OperatingSystem.ResourceManagement;
 
@@ -20,6 +21,7 @@ public class ResourceManager
         List<TPart> parts,
         IResourceScheduler<TPart> scheduler) where TPart : ResourcePart
     {
+        Log.Debug("Creating resource {ResourceName}", resourceName);
         var resource = Resource<TPart>.Create(
             name: resourceName,
             parts: parts,
@@ -33,6 +35,8 @@ public class ResourceManager
     {
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         resource.Parts.Add(part);
+
+        Log.Debug("Adding resource {Resource} part {Part}", resourceName, part.Name);
         
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)
@@ -45,6 +49,8 @@ public class ResourceManager
     {
         var resource = _resources.First(x => x.Name == resourceName);
         var currentProcessId = _processManager.CurrentProcessId;
+
+        Log.Debug("Resource {Resource} part {Part} requested by {ProcessName}", resourceName, partName, _processManager.CurrentProcess.Name);
         
         resource.Requesters.Add(new ResourceRequester
         {

@@ -1,3 +1,4 @@
+using Assembler;
 using OperatingSystem.Hardware;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
@@ -39,11 +40,31 @@ public class StartStopProc : ProcessProgram
                 _resourceManager.CreateResource(ResourceNames.JobGovernorInterrupt, [], new JobGovernorInterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.KeyboardInput, [], new KeyboardInputScheduler());
                 _resourceManager.CreateResource(ResourceNames.NonExistent, [], new NonExistentResourceScheduler());
+                _resourceManager.CreateResource(ResourceNames.FromInterrupt, [], new FromInterruptScheduler());
+                _resourceManager.CreateResource(ResourceNames.ProgramInMemory, [], new ProgramInMemoryScheduler());
                 
                 _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _memoryManager));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
                 _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager));
+                
+                
+                
+                // TODO: take this from CLI
+                var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "test.txt");
+                var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
+                _resourceManager.AddResourcePart(
+                    ResourceNames.ProgramInMemory,
+                    new ProgramInMemoryData
+                    {
+                        Name = nameof(ProgramInMemoryData),
+                        MachineCode = machineCode,
+                        IsSingleUse = true
+                    }
+                );
+                
+                
+                
 
                 return CurrentStep + 1;
             }

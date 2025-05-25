@@ -1,4 +1,7 @@
+using OperatingSystem.Hardware.Constants;
+using OperatingSystem.ProcessManagement.Processes;
 using OperatingSystem.Utilities;
+using Serilog;
 
 namespace OperatingSystem.ProcessManagement;
 
@@ -34,11 +37,14 @@ public class ProcessManager
 
         _processes.Add(process);
         
+        Log.Information("Created process {ProcessName} with id {Pid}", processName, process.Id);
+        
         return process.Id;
     }
     
     public void KillProcess(string processName)
     {
+        Log.Information("Killing process {ProcessName}", processName);
         KillProcessRecursively(processName);
     }
 
@@ -87,6 +93,23 @@ public class ProcessManager
     {
         var process = _processes.First(x => x.Id == processId);
         return process.Registers;
+    }
+
+    public void HandlePeriodicInterrupt()
+    {
+        if (CurrentProcess is null)
+        {
+            return;
+        }
+        
+        if (CurrentProcess.Program is VMProc vmProc)
+        {
+            vmProc.OnInterrupt(InterruptCodes.PeriodicInterrupt);
+        }
+        else
+        {
+            CurrentProcess.State = ProcessState.Ready;
+        }
     }
 
     private void KillProcessRecursively(string processName)

@@ -2,13 +2,9 @@ namespace OperatingSystem.ProcessManagement;
 
 public class Process
 {
-    private static readonly TimeSpan PeriodicInterruptInterval = TimeSpan.FromMilliseconds(25);
-    
-    private DateTimeOffset _startedAt;
-    
     public ushort Id { get; private set; }
     public string Name { get; private set; }
-    public ProcessState State { get; private set; }
+    public ProcessState State { get; set; }
     public Process? Parent { get; private set; }
     public List<Process> Children { get; private set; }
     public byte BasePriority { get; private set; }
@@ -32,25 +28,16 @@ public class Process
             Priority = 0,
             State = ProcessState.Ready,
             Program = program,
-            _startedAt = DateTimeOffset.MinValue
         };
     }
 
     public void Run() {
         State = ProcessState.Running;
-        _startedAt = DateTimeOffset.Now;
-
         do
         {
             Program.Step();
         }
-        while (State == ProcessState.Running && _startedAt.Add(PeriodicInterruptInterval) > DateTimeOffset.Now);
-        
-        if (State == ProcessState.Running)
-        {
-            // Periodic interrupt occurred
-            State = ProcessState.Ready;
-        }
+        while (State == ProcessState.Running);
     }
     
     public void Suspend()
