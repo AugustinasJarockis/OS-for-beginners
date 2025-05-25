@@ -9,15 +9,15 @@ public class MainProc : ProcessProgram
     private readonly ResourceManager _resourceManager;
     private readonly ProcessManager _processManager;
     private readonly Processor _processor;
-    private readonly RAM _ram;
+    private readonly MemoryManager _memoryManager;
 
     private ProgramInMemoryData _programInMemoryData;
 
-    public MainProc(ProcessManager processManager, ResourceManager resourceManager, Processor processor, RAM ram)
+    public MainProc(ProcessManager processManager, ResourceManager resourceManager, Processor processor, MemoryManager memoryManager)
     {
         _resourceManager = resourceManager;
         _processor = processor;
-        _ram = ram;
+        _memoryManager = memoryManager;
         _processManager = processManager;
     }
 
@@ -53,7 +53,7 @@ public class MainProc : ProcessProgram
                             _processManager,
                             _resourceManager,
                             _processor,
-                            _ram
+                            _memoryManager
                         )
                     );
                 }

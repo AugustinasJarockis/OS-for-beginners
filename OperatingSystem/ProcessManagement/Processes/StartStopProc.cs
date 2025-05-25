@@ -7,6 +7,8 @@ namespace OperatingSystem.ProcessManagement.Processes;
 
 public class StartStopProc : ProcessProgram
 {
+    private MemoryManager _memoryManager;
+    
     private readonly ProcessManager _processManager;
     private readonly ResourceManager _resourceManager;
     private readonly Processor _processor;
@@ -30,12 +32,15 @@ public class StartStopProc : ProcessProgram
         {
             case 0:
             {
+                _memoryManager = new MemoryManager(_processManager, _ram);
+                
                 _resourceManager.CreateResource(ResourceNames.OsShutdown, [], new OsShutdownScheduler());
                 _resourceManager.CreateResource(ResourceNames.Interrupt, [], new InterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.JobGovernorInterrupt, [], new JobGovernorInterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.KeyboardInput, [], new KeyboardInputScheduler());
+                _resourceManager.CreateResource(ResourceNames.NonExistent, [], new NonExistentResourceScheduler());
                 
-                _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _ram));
+                _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _memoryManager));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
                 _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager));

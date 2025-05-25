@@ -77,15 +77,25 @@ public class ProcessManager
         }
     }
 
+    public void UpdateProcessRegisters(int processId, uint[] registers)
+    {
+        var process = _processes.First(x => x.Id == processId);
+        process.UpdateRegisters(registers);
+    }
+
+    public uint[] GetProcessRegisters(int processId)
+    {
+        var process = _processes.First(x => x.Id == processId);
+        return process.Registers;
+    }
+
     private void KillProcessRecursively(string processName)
     {
         var process = FindProcessByName(processName);
         if (process is null)
         {
-            return; // TODO: error?
+            return;
         }
-        
-        // TODO: release resources
         
         var childProcessNames = process.Children.Select(x => x.Name).ToList();
         foreach (var childProcessName in childProcessNames)
@@ -109,7 +119,7 @@ public class ProcessManager
             }
         }
         
-        throw new InvalidOperationException("Could not allocate process id"); // TODO: maybe add some interrupt?
+        throw new InvalidOperationException("Could not allocate process id");
     }
 
     private Process? FindProcessByName(string processName)

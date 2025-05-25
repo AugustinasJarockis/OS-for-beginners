@@ -7,4 +7,5 @@ public static class ResourceNames
     public const string JobGovernorInterrupt = nameof(JobGovernorInterrupt);
     public const string OsShutdown = nameof(OsShutdown);
     public const string KeyboardInput = nameof(KeyboardInput);
+    public const string NonExistent = nameof(NonExistent);
 }
