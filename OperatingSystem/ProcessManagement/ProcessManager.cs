@@ -94,10 +94,8 @@ public class ProcessManager
         var process = FindProcessByName(processName);
         if (process is null)
         {
-            return; // TODO: error?
+            return;
         }
-        
-        // TODO: release resources
         
         var childProcessNames = process.Children.Select(x => x.Name).ToList();
         foreach (var childProcessName in childProcessNames)
@@ -121,7 +119,7 @@ public class ProcessManager
             }
         }
         
-        throw new InvalidOperationException("Could not allocate process id"); // TODO: maybe add some interrupt?
+        throw new InvalidOperationException("Could not allocate process id");
     }
 
     private Process? FindProcessByName(string processName)
