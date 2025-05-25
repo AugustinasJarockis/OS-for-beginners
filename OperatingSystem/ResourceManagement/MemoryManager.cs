@@ -1,7 +1,7 @@
 using OperatingSystem.Hardware;
-using OperatingSystem.Hardware.Constants;
 using OperatingSystem.ProcessManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
+using Serilog;
 
 namespace OperatingSystem.ResourceManagement;
 
@@ -82,6 +82,8 @@ public class MemoryManager
         {
             page.AllocatedToPid = null;
         }
+        
+        Log.Information("Freed {PageCount} pages of memory from process by id {Pid}", pages.Count, currentProcessId);
 
         _allocatedPagesByPid.Remove(currentProcessId);
     }
@@ -100,13 +102,6 @@ public class MemoryManager
     public uint GetPageTableAddress(int processId)
     {
         return PageTablesBaseAddress + (uint)processId * PageTableSize;
-    }
-
-    public char GetAndClearKeyboardInput()
-    {
-        var key = (char)_ram.GetByte(MemoryLocations.KeyboardInput);
-        _ram.SetByte(MemoryLocations.KeyboardInput, 0);
-        return key;
     }
     
     private List<ushort> RunScheduler()
@@ -146,6 +141,8 @@ public class MemoryManager
             {
                 _allocatedPagesByPid[requester.ProcessId] = pagesAllocatedToRequester;
             }
+            
+            Log.Information("Allocated {Pages} memory pages to process by id {Pid}", pagesAllocatedToRequester.Count, requester.ProcessId);
 
             var processPages = _allocatedPagesByPid[requester.ProcessId];
             SetPageTableLength(requester.ProcessId, processPages.Count);

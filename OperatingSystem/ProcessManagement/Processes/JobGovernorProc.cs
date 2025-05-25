@@ -95,19 +95,7 @@ public class JobGovernorProc : ProcessProgram
                     return 5;
                 }
                 
-                if (_interruptData.InterruptCode == InterruptCodes.KeyboardInput)
-                {
-                    var key = _memoryManager.GetAndClearKeyboardInput();
-                    _resourceManager.AddResourcePart(
-                        ResourceNames.KeyboardInput,
-                        new KeyboardInputData
-                        {
-                            PressedKey = key,
-                            Name = nameof(KeyboardInputData),
-                            IsSingleUse = true,
-                        });
-                }
-                else if (_interruptData.InterruptCode == InterruptCodes.TerminalOutput)
+                if (_interruptData.InterruptCode == InterruptCodes.TerminalOutput)
                 {
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.WriteToExternalStorage)
@@ -126,6 +114,14 @@ public class JobGovernorProc : ProcessProgram
                 FlagUtils.SetModeFlag(_processor);
                 
                 _processManager.ActivateProcess(_vmPid);
+                
+                _resourceManager.AddResourcePart(
+                    ResourceNames.FromInterrupt,
+                    new FromInterruptData
+                    {
+                        Name = $"{nameof(FromInterruptData)}_{_guid}",
+                        IsSingleUse = true,
+                    });
 
                 return 2;
             }

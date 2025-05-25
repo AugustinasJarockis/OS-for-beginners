@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using OperatingSystem.Hardware.Constants;
+﻿using OperatingSystem.Hardware.Constants;
 using OperatingSystem.Hardware.Enums;
 using OperatingSystem.Hardware.Operations;
 
@@ -12,21 +10,10 @@ public class Processor
     public readonly Action<byte> OnInterrupt;
 
     private readonly RAM _ram;
-    private readonly HardwareInterruptDevice _hardwareInterruptDevice;
-    private readonly ExternalStorage _externalStorage;
-    private readonly TimeSpan _periodicInterruptInterval;
     
-    public Processor(
-        RAM ram,
-        HardwareInterruptDevice hardwareInterruptDevice,
-        ExternalStorage externalStorage,
-        TimeSpan periodicInterruptInterval,
-        Action<byte> onInterrupt)
+    public Processor(RAM ram, Action<byte> onInterrupt)
     {
         _ram = ram;
-        _hardwareInterruptDevice = hardwareInterruptDevice;
-        _externalStorage = externalStorage;
-        _periodicInterruptInterval = periodicInterruptInterval;
         OnInterrupt = onInterrupt;
     }
 
@@ -40,16 +27,6 @@ public class Processor
         }
     }
 
-    public void Start()
-    {
-        new Thread(WatchTerminalOutput).Start();
-        new Thread(WatchKeyboardInput).Start();
-        new Thread(WatchWriteToExternalStorage).Start();
-        new Thread(WatchReadFromExternalStorage).Start();
-        new Thread(RunPeriodicInterruptTimer).Start();
-        new Thread(TrackTime).Start();
-    }
-
     public void Step()
     {
         var instruction = GetDWordFromRam(registers[(int)Register.PC]);
@@ -60,12 +37,6 @@ public class Processor
     
         var executeCommand = Decoder.DecodeOperation(instruction.Value);
         executeCommand(this, _ram);
-        
-        var interruptCode = _hardwareInterruptDevice.TryGetInterruptCode();
-        if (interruptCode.HasValue)
-        {
-            MachineStateOperations.INT(this, _ram, interruptCode.Value);
-        }
     }
 
     public void SetByteInRam(ulong address, byte value)
@@ -145,84 +116,5 @@ public class Processor
         var offsetInPage = address % pageSize;
         
         return physicalAddress + offsetInPage;
-    }
-
-    [DoesNotReturn]
-    private void TrackTime() {
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        while (true) {
-            _ram.SetDWord(MemoryLocations.Time, (uint)stopwatch.Elapsed.TotalMilliseconds);
-        }
-    }
-    
-    [DoesNotReturn]
-    private void RunPeriodicInterruptTimer()
-    {
-        while (true)
-        {
-            Thread.Sleep(_periodicInterruptInterval);
-            _hardwareInterruptDevice.Interrupt(InterruptCodes.PeriodicInterrupt);
-        }
-    }
-    
-    [DoesNotReturn]
-    private void WatchTerminalOutput()
-    {
-        while (true) 
-        {
-            var terminalValue = _ram.GetByte(MemoryLocations.TerminalOutput);
-            if (terminalValue != 0) {
-                Console.Write((char)terminalValue);
-                _ram.SetByte(MemoryLocations.TerminalOutput, 0);
-            }
-        }
-    }
-
-    [DoesNotReturn]
-    private void WatchKeyboardInput()
-    {
-        while (true)
-        {
-            var key = Console.ReadKey();
-            _ram.SetByte(MemoryLocations.KeyboardInput, (byte)key.KeyChar);
-            _hardwareInterruptDevice.Interrupt(InterruptCodes.KeyboardInput);   
-        }
-    }
-
-    [DoesNotReturn]
-    private void WatchWriteToExternalStorage()
-    {
-        while (true)
-        {
-            var indicatorByte = _ram.GetByte(0x12003);
-            if ((indicatorByte & 1) == 0)
-                continue;
-            
-            var blockNumber = _ram.GetDWord(0x12000) & 0xFFFFFFFE;
-            var data = new uint[ExternalStorage.BLOCK_SIZE];
-            for (var i = 0; i < ExternalStorage.BLOCK_SIZE; i++)
-                data[i] = _ram.GetDWord((uint)(0x12004 + i));
-                
-            _externalStorage.WriteBlock(blockNumber, data);
-            _ram.SetByte(0x12003, (byte)(indicatorByte - 1));
-        }
-    }
-
-    [DoesNotReturn]
-    private void WatchReadFromExternalStorage()
-    {
-        while (true)
-        {
-            var indicatorByte = _ram.GetByte(0x13007);
-            if ((indicatorByte & 1) == 0)
-                continue;
-            
-            var blockNumber = _ram.GetDWord(0x13004) & 0xFFFFFFFE;
-            var data = _externalStorage.ReadBlock(blockNumber);
-            for (var i = 0; i < data.Length; i++)
-                _ram.SetDWord((uint)(0x13008 + i), data[i]);
-            
-            _ram.SetByte(0x13007, (byte)(indicatorByte - 1));
-        }
     }
 }
