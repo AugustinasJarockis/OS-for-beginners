@@ -9,14 +9,17 @@ namespace OperatingSystem.ProcessManagement.Processes;
 
 public class JobGovernorProc : ProcessProgram
 {
+    private const int StackSizeInBytes = 32768; // 32KB
+    
     private readonly Guid _guid;
     private readonly List<uint> _machineCode;
     private readonly ProcessManager _processManager;
     private readonly ResourceManager _resourceManager;
     private readonly Processor _processor;
-    private readonly RAM _ram;
+    private readonly MemoryManager _memoryManager;
 
     private ushort _vmPid;
+    private string _vmName;
     private JobGovernorInterruptData _interruptData;
 
     public JobGovernorProc(
@@ -25,14 +28,14 @@ public class JobGovernorProc : ProcessProgram
         ProcessManager processManager,
         ResourceManager resourceManager,
         Processor processor,
-        RAM ram)
+        MemoryManager memoryManager)
     {
         _guid = guid;
         _machineCode = machineCode;
         _processManager = processManager;
         _resourceManager = resourceManager;
         _processor = processor;
-        _ram = ram;
+        _memoryManager = memoryManager;
     }
 
     protected override int Next()
@@ -41,21 +44,29 @@ public class JobGovernorProc : ProcessProgram
         {
             case 0:
             {
-                // TODO: assign resources to the VM; copy machine code into memory
-                for (var i = 0; i < _machineCode.Count; i++)
-                    _ram.SetDWord((ulong)i * 4, _machineCode[i]);
-                
-                _vmPid = _processManager.CreateProcess(
-                    $"{nameof(VMProc)}_{_guid}",
-                    new VMProc(_guid, _resourceManager, _processor)
-                );
-
-                // TODO: we should not use RAM directly - we should request for memory from resource manager
-                MachineStateOperations.ENTER(_processor, _ram);
+                var programSizeInBytes = _machineCode.Count * 4;
+                _memoryManager.AllocateMemory(programSizeInBytes + StackSizeInBytes);
                 
                 return CurrentStep + 1;
             }
             case 1:
+            {
+                for (var i = 0; i < _machineCode.Count; i++)
+                    _memoryManager.SetDWord((ulong) i * 4, _machineCode[i]);
+
+                _vmName = $"{nameof(VMProc)}_{_guid}";
+                _vmPid = _processManager.CreateProcess(
+                    _vmName,
+                    new VMProc(_guid, _resourceManager, _processor)
+                );
+
+                _processor.registers[(int)Register.SP] = (uint)_machineCode.Count * 4;
+                _processor.registers[(int)Register.PTBR] = _memoryManager.GetPageTableAddress(_processManager.CurrentProcessId);
+                FlagUtils.SetModeFlag(_processor);
+
+                return CurrentStep + 1;
+            }
+            case 2:
             {
                 _resourceManager.RequestResource(
                     ResourceNames.JobGovernorInterrupt,
@@ -64,21 +75,29 @@ public class JobGovernorProc : ProcessProgram
 
                 return CurrentStep + 1;
             }
-            case 2:
+            case 3:
             {
                 _interruptData = _resourceManager.ReadResource<JobGovernorInterruptData>(
                     ResourceNames.JobGovernorInterrupt,
                     $"{nameof(JobGovernorInterruptData)}_{_guid}"
                 );
                 
+                _processManager.UpdateProcessRegisters(_vmPid, _processor.registers);
                 _processManager.SuspendProcess(_vmPid);
-                
-                // Console.WriteLine($"Interrupt occurred: {_interruptData.InterruptCode}");
+                FlagUtils.ClearModeFlag(_processor);
 
+                if (_interruptData.InterruptCode is
+                    InterruptCodes.DivByZero or
+                    InterruptCodes.InvalidOpCode or 
+                    InterruptCodes.PageFault or
+                    InterruptCodes.Halt)
+                {
+                    return 5;
+                }
+                
                 if (_interruptData.InterruptCode == InterruptCodes.KeyboardInput)
                 {
-                    var key = (char)_ram.GetByte(MemoryLocations.KeyboardInput);
-                    _ram.SetByte(MemoryLocations.KeyboardInput, 0);
+                    var key = _memoryManager.GetAndClearKeyboardInput();
                     _resourceManager.AddResourcePart(
                         ResourceNames.KeyboardInput,
                         new KeyboardInputData
@@ -88,23 +107,53 @@ public class JobGovernorProc : ProcessProgram
                             IsSingleUse = true,
                         });
                 }
-                
-                // TODO: request resources needed for interrupt here
+                else if (_interruptData.InterruptCode == InterruptCodes.TerminalOutput)
+                {
+                }
+                else if (_interruptData.InterruptCode == InterruptCodes.WriteToExternalStorage)
+                {
+                }
+                else if (_interruptData.InterruptCode == InterruptCodes.ReadFromExternalStorage)
+                {
+                }
 
                 return CurrentStep + 1;
             }
-            case 3:
+            case 4:
             {
-                // TODO: read granted resources needed for interrupt handling
-                
-                // TODO: if we failed to handle interrupt, stop the VM
+                var registers = _processManager.GetProcessRegisters(_vmPid);
+                _processor.UpdateRegisters(registers);
+                FlagUtils.SetModeFlag(_processor);
                 
                 _processManager.ActivateProcess(_vmPid);
+
+                return 2;
+            }
+            case 5:
+            {
+                _processManager.KillProcess(_vmName);
+                _memoryManager.FreeMemory();
                 
-                return 1;
+                _resourceManager.AddResourcePart(
+                    ResourceNames.ProgramInMemory,
+                    new ProgramInMemoryData
+                    {
+                        Name = nameof(ProgramInMemoryData),
+                        JobGovernorId = $"{nameof(JobGovernorProc)}_{_guid}",
+                        IsSingleUse = true,
+                        IsEnd = true,
+                    });
+                
+                _resourceManager.RequestResource(ResourceNames.NonExistent, string.Empty);
+                
+                return CurrentStep + 1;
+            }
+            case 6:
+            {
+                return 6;
             }
             default:
-                return 0;
+                return 5;
         }
     }
 }

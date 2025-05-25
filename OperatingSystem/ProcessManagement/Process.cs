@@ -14,6 +14,7 @@ public class Process
     public byte BasePriority { get; private set; }
     public byte Priority { get; set; }
     public ProcessProgram Program { get; init; }
+    public uint[] Registers { get; } = new uint[12];
     
     private Process()
     {
@@ -72,5 +73,13 @@ public class Process
             ProcessState.Blocked => ProcessState.Ready,
             _ => State
         };
+    }
+
+    public void UpdateRegisters(uint[] registers)
+    {
+        for (var i = 0; i < Registers.Length; i++)
+        {
+            Registers[i] = registers[i];
+        }
     }
 }

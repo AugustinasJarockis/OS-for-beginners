@@ -32,6 +32,14 @@ public class Processor
 
     public bool IsInVirtualMode => (registers[(int)Register.FR] & 0b0100) != 0;
 
+    public void UpdateRegisters(uint[] newRegisters)
+    {
+        for (var i = 0; i < registers.Length; i++)
+        {
+            registers[i] = newRegisters[i];
+        }
+    }
+
     public void Start()
     {
         new Thread(WatchTerminalOutput).Start();
@@ -132,7 +140,7 @@ public class Processor
             return null;
         }
 
-        var physicalPageNumber = pageTableEntry & 0xFFFFFFFE;
+        var physicalPageNumber = (pageTableEntry & 0xFFFFFFFE) >> 1;
         var physicalAddress = physicalPageNumber * pageSize;
         var offsetInPage = address % pageSize;
         
