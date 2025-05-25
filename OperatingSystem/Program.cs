@@ -39,13 +39,13 @@ HardwareDevices.RunPeriodicInterruptTimer(TimeSpan.FromMilliseconds(50), () =>
     processManager.HandlePeriodicInterrupt();
 });
 
-void OnInterrupt(byte interruptCode)
+void OnVMInterrupt(byte interruptCode)
 {
     var vmProc = (VMProc)processManager.CurrentProcess.Program;
     vmProc.OnInterrupt(interruptCode);
 }
 
-var processor = new Processor(ram, OnInterrupt);
+var processor = new Processor(ram, OnVMInterrupt);
 
 processManager.CreateProcess(
     nameof(StartStopProc),
