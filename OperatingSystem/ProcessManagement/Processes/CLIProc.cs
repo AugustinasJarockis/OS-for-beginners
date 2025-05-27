@@ -109,7 +109,7 @@ public class CLIProc : ProcessProgram
                     ushort pid;
                     ushort.TryParse(_inputTokens[1], out pid);
                     _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
-                    return 1;
+                    return 0;
                 }
             case 8: {
                     // TODO: error handling
