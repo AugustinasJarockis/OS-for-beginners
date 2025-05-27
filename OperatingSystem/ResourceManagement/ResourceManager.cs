@@ -40,7 +40,7 @@ public class ResourceManager
             resource.Release(processId);
         }
     }
-
+    
     public void SubscribeGrantedToPidChange<TPart>(string resourceName, Action<string, ushort?> callback) where TPart : ResourcePart
     {
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
@@ -67,6 +67,19 @@ public class ResourceManager
 
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         resource.SetGrantedToPid(part, null);
+        
+        var pidsGrantedResource = resource.RunScheduler();
+        foreach (var pid in pidsGrantedResource)
+        {
+            _processManager.ActivateProcess(pid);
+        }
+    }
+
+    public void ChangeOwnership<TPart>(string resourceName, string partName, ushort newOwnerPid) where TPart : ResourcePart
+    {
+        var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
+        var part = resource.Parts.First(p => p.Name == partName);
+        resource.SetGrantedToPid(part, newOwnerPid);
         
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)

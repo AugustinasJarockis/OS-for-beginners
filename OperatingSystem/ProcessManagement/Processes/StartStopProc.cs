@@ -119,7 +119,7 @@ public class StartStopProc : ProcessProgram
         var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
         var content = _fileSystem.ReadFile(fileHandle);
         _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
-
+        
         if (content is null)
         {
             _resourceManager.AddResourcePart(

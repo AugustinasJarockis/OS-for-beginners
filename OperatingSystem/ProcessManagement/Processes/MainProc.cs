@@ -46,7 +46,7 @@ public class MainProc : ProcessProgram
                 }
                 else
                 {
-                    _processManager.CreateProcess(
+                    var pid = _processManager.CreateProcess(
                         $"{nameof(JobGovernorProc)}_{_programInMemoryData.ProgramName}",
                         new JobGovernorProc(
                             _programInMemoryData.ProgramName,
@@ -57,6 +57,8 @@ public class MainProc : ProcessProgram
                             _memoryManager
                         )
                     );
+                    
+                    _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
                 }
 
                 return 0;
