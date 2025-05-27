@@ -38,8 +38,8 @@ public class CLIProc : ProcessProgram
             }
             case 2:
             {
-                var userInput = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData));
-                
+                input = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData)).Text;
+
                 // TODO: remove this, this is example how to use terminal
                 // _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
                 // {
@@ -48,21 +48,11 @@ public class CLIProc : ProcessProgram
                 //     ProcessId = _processManager.CurrentProcessId,
                 //     Text = userInput.Text
                 // });
-                
-                if (userInput.Text == "shutdown")
-                {
-                    _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData
-                    {
-                        Name = nameof(OsShutdownData),
-                        IsSingleUse = true,
-                    });
-                }
-                
-                return 1;
+                return 3;
             }
             case 3: {
                     inputTokens = input.Trim().ToLower().Split(' ').Select(token => token.Trim()).ToList();
-                    return 3;
+                    return 4;
                 }
             case 4: {
                     switch (inputTokens[0]) {
@@ -140,7 +130,10 @@ public class CLIProc : ProcessProgram
                     return 0;
                 }
             case 11: {
-                    // TODO: make shutdown
+                    _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData {
+                        Name = nameof(OsShutdownData),
+                        IsSingleUse = true,
+                    });
                     return 0;
                 }
             case 12: {
