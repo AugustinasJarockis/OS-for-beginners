@@ -120,7 +120,7 @@ public class CLIProc : ProcessProgram
                     // TODO: check if id exists
                     ushort pid;
                     ushort.TryParse(inputTokens[1], out pid);
-                    _focusedProcessId = pid;
+                    _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
                     return 0;
                 }
             case 8: {

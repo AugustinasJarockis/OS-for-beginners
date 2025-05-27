@@ -1,6 +1,7 @@
 using OperatingSystem.Hardware.Constants;
 using OperatingSystem.ProcessManagement.Processes;
-using OperatingSystem.ResourceManagement.Schedulers;
+using OperatingSystem.ResourceManagement.ResourceParts;
+using OperatingSystem.ResourceManagement;
 using OperatingSystem.Utilities;
 using Serilog;
 
@@ -31,13 +32,12 @@ public class ProcessManager
         
         var process = Process.Create(
             id: AllocateProcessId(),
-            name: processName,
-            program: processProgram,
+        name: processName,
+        program: processProgram,
             parent: CurrentProcess
         );
 
         if (isCLI) {
-            FocusScheduler.FocusedProcessId = process.Id;
             CLIProcessId = process.Id;
         }
 

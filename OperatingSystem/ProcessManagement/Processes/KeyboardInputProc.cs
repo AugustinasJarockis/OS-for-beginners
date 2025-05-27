@@ -1,6 +1,5 @@
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
-using OperatingSystem.ResourceManagement.Schedulers;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -71,7 +70,7 @@ public class KeyboardInputProc : ProcessProgram
             case 5: 
             {
                 if (currentInput == ":wq\n") {
-                    FocusScheduler.FocusedProcessId = ProcessManager.CLIProcessId;
+                    _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), ProcessManager.CLIProcessId);
                     currentInput = "";
                     return 0;
                 }

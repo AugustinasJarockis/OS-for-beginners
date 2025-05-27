@@ -77,6 +77,7 @@ public class ResourceManager
 
     public void ChangeOwnership<TPart>(string resourceName, string partName, ushort newOwnerPid) where TPart : ResourcePart
     {
+        Console.WriteLine("Focused: " + newOwnerPid);
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         var part = resource.Parts.First(p => p.Name == partName);
         var oldOwnerPid = part.GrantedToPid;
