@@ -25,18 +25,18 @@ public class CLIProc : ProcessProgram
             }
             case 1:
             {
-                _resourceManager.RequestResource(ResourceNames.KeyboardInput, nameof(KeyboardInputData));
+                _resourceManager.RequestResource(ResourceNames.UserInput, nameof(UserInputData));
                 return CurrentStep + 1;
             }
             case 2:
             {
-                var keyboardInput = _resourceManager.ReadResource<KeyboardInputData>(ResourceNames.KeyboardInput, nameof(KeyboardInputData));
+                var userInput = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData));
                 _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
                 {
                     Name = nameof(TerminalOutputData),
                     IsSingleUse = true,
                     ProcessId = _processManager.CurrentProcessId,
-                    Text = keyboardInput.PressedKey.ToString()
+                    Text = userInput.Text
                 });
                 return 1;
             }

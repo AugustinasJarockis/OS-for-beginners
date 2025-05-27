@@ -7,7 +7,7 @@ public class TerminalOutputProc : ProcessProgram
 {
     private readonly ResourceManager _resourceManager;
     
-    private ushort? _focusedProcessId = null;
+    private ushort? _focusedProcessId;
 
     public TerminalOutputProc(ResourceManager resourceManager)
     {

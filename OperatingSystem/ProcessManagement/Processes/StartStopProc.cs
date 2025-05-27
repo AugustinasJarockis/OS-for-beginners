@@ -42,21 +42,23 @@ public class StartStopProc : ProcessProgram
                 _fileSystem = new FileSystem(_externalStorage, _processManager, _resourceManager);
                 
                 _resourceManager.CreateResource(ResourceNames.OsShutdown, [], new OsShutdownScheduler());
+                _resourceManager.CreateResource(ResourceNames.Focus, [], new FocusScheduler());
                 _resourceManager.CreateResource(ResourceNames.Interrupt, [], new InterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.JobGovernorInterrupt, [], new JobGovernorInterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.KeyboardInput, [], new KeyboardInputScheduler());
+                _resourceManager.CreateResource(ResourceNames.UserInput, [], new UserInputScheduler(_resourceManager));
                 _resourceManager.CreateResource(ResourceNames.NonExistent, [], new NonExistentResourceScheduler());
                 _resourceManager.CreateResource(ResourceNames.FromInterrupt, [], new FromInterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.ProgramInMemory, [], new ProgramInMemoryScheduler());
                 _resourceManager.CreateResource(ResourceNames.FileHandle, [], new FileHandleScheduler());
                 _resourceManager.CreateResource(ResourceNames.TerminalOutput, [], new TerminalOutputScheduler());
-                _resourceManager.CreateResource(ResourceNames.Focus, [], new FocusScheduler());
                 
                 _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _memoryManager));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
                 _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager, _processManager));
                 _processManager.CreateProcess(nameof(TerminalOutputProc), new TerminalOutputProc(_resourceManager));
+                _processManager.CreateProcess(nameof(KeyboardInputProc), new KeyboardInputProc(_resourceManager));
                 
                 _resourceManager.AddResourcePart(ResourceNames.Focus, new FocusData
                 {
