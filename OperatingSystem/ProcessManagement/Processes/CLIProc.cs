@@ -1,4 +1,5 @@
 using OperatingSystem.ResourceManagement;
+using OperatingSystem.ResourceManagement.Files;
 using OperatingSystem.ResourceManagement.ResourceParts;
 
 namespace OperatingSystem.ProcessManagement.Processes;
@@ -144,7 +145,8 @@ public class CLIProc : ProcessProgram
                     return 1;
                 }
             case 13: {
-                    // TODO: make create
+                    // TODO: validation?
+                    var handle = FileSystem.CreateFile(_inputTokens[1]);
                     return 1;
                 }
             case 14: {
