@@ -31,13 +31,25 @@ public class CLIProc : ProcessProgram
             case 2:
             {
                 var userInput = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData));
-                _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
+                
+                // TODO: remove this, this is example how to use terminal
+                // _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
+                // {
+                //     Name = nameof(TerminalOutputData),
+                //     IsSingleUse = true,
+                //     ProcessId = _processManager.CurrentProcessId,
+                //     Text = userInput.Text
+                // });
+                
+                if (userInput.Text == "shutdown")
                 {
-                    Name = nameof(TerminalOutputData),
-                    IsSingleUse = true,
-                    ProcessId = _processManager.CurrentProcessId,
-                    Text = userInput.Text
-                });
+                    _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData
+                    {
+                        Name = nameof(OsShutdownData),
+                        IsSingleUse = true,
+                    });
+                }
+                
                 return 1;
             }
             default:
