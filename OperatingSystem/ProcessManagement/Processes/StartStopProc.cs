@@ -73,11 +73,17 @@ public class StartStopProc : ProcessProgram
                     Log.Information("Focused pid {Pid}", grantedToPid);
                 });
 
-                TransferDataFileToExternalStorage("test.txt");
-                LoadProgram("test.txt");
+                TransferDataFileToExternalStorage("halt.txt");
+                LoadProgram("halt.txt");
                 
-                TransferDataFileToExternalStorage("test2.txt");
-                LoadProgram("test2.txt");
+                TransferDataFileToExternalStorage("print_bye.txt");
+                LoadProgram("print_bye.txt");
+                
+                TransferDataFileToExternalStorage("print_labas.txt");
+                LoadProgram("print_labas.txt");
+                
+                TransferDataFileToExternalStorage("load_store.txt");
+                LoadProgram("load_store.txt");
 
                 return CurrentStep + 1;
             }
