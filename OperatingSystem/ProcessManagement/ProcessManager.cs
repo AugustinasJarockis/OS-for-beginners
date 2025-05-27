@@ -1,5 +1,6 @@
 using OperatingSystem.Hardware.Constants;
 using OperatingSystem.ProcessManagement.Processes;
+using OperatingSystem.ResourceManagement.Schedulers;
 using OperatingSystem.Utilities;
 using Serilog;
 
@@ -13,13 +14,15 @@ public class ProcessManager
     public Process CurrentProcess { get; private set; }
     public ushort CurrentProcessId => CurrentProcess.Id;
 
+    public static ushort CLIProcessId { get; private set; }
+
     public ProcessManager()
     {
         _processes = [];
         _processQueue = new();
     }
     
-    public ushort CreateProcess(string processName, ProcessProgram processProgram)
+    public ushort CreateProcess(string processName, ProcessProgram processProgram, bool isCLI = false)
     {
         if (_processes.Any(x => x.Name == processName))
         {
@@ -32,6 +35,11 @@ public class ProcessManager
             program: processProgram,
             parent: CurrentProcess
         );
+
+        if (isCLI) {
+            FocusScheduler.FocusedProcessId = process.Id;
+            CLIProcessId = process.Id;
+        }
 
         CurrentProcess ??= process;
 
