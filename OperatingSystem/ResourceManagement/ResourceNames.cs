@@ -11,4 +11,5 @@ public static class ResourceNames
     public const string NonExistent = nameof(NonExistent);
     public const string FileHandle = nameof(FileHandle);
     public const string TerminalOutput = nameof(TerminalOutput);
+    public const string Focus = nameof(Focus);
 }

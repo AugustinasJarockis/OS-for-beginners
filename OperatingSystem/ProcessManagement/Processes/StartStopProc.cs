@@ -50,12 +50,19 @@ public class StartStopProc : ProcessProgram
                 _resourceManager.CreateResource(ResourceNames.ProgramInMemory, [], new ProgramInMemoryScheduler());
                 _resourceManager.CreateResource(ResourceNames.FileHandle, [], new FileHandleScheduler());
                 _resourceManager.CreateResource(ResourceNames.TerminalOutput, [], new TerminalOutputScheduler());
+                _resourceManager.CreateResource(ResourceNames.Focus, [], new FocusScheduler());
                 
                 _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _memoryManager));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
-                _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager));
+                _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager, _processManager));
                 _processManager.CreateProcess(nameof(TerminalOutputProc), new TerminalOutputProc(_resourceManager));
+                
+                _resourceManager.AddResourcePart(ResourceNames.Focus, new FocusData
+                {
+                    Name = nameof(FocusData),
+                    IsSingleUse = false,
+                });
 
                 TransferDataFileToExternalStorage("test.txt");
                 LoadProgram("test.txt");

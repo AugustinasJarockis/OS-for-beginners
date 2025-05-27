@@ -9,6 +9,7 @@ public class Resource<TPart> : IResource where TPart : ResourcePart
     public List<ResourceRequester> Requesters { get; private set; }
     public List<TPart> Parts { get; private init; }
     public IResourceScheduler<TPart> Scheduler { get; private init; }
+    public List<Action<string, ushort?>> OnGrantedToPidChange { get; private init; }
 
     private Resource()
     {
@@ -24,7 +25,8 @@ public class Resource<TPart> : IResource where TPart : ResourcePart
             Name = name,
             Parts = parts,
             Scheduler = scheduler,
-            Requesters = []
+            Requesters = [],
+            OnGrantedToPidChange = [],
         };
     }
 
@@ -37,6 +39,15 @@ public class Resource<TPart> : IResource where TPart : ResourcePart
         foreach (var part in partsGrantedToProcess)
         {
             part.GrantedToPid = null;
+        }
+    }
+
+    public void SetGrantedToPid<TPart>(TPart part, ushort? grantedToPid) where TPart : ResourcePart
+    {
+        part.GrantedToPid = grantedToPid;
+        foreach (var action in OnGrantedToPidChange)
+        {
+            action(part.Name, grantedToPid);
         }
     }
 }

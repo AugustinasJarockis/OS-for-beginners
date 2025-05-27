@@ -13,7 +13,7 @@ public abstract class ResourceSchedulerBase<TPart> : IResourceScheduler<TPart> w
             var part = resource.Parts.FirstOrDefault(x => x.Name == requester.PartName && x.GrantedToPid is null);
             if (part is not null)
             {
-                part.GrantedToPid = requester.ProcessId;
+                resource.SetGrantedToPid(part, requester.ProcessId);
                 requestersGrantedResource.Add(requester);
             }
         }

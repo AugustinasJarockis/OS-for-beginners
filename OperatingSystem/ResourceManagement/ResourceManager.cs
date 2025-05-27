@@ -41,6 +41,12 @@ public class ResourceManager
         }
     }
 
+    public void SubscribeGrantedToPidChange<TPart>(string resourceName, Action<string, ushort?> callback) where TPart : ResourcePart
+    {
+        var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
+        resource.OnGrantedToPidChange.Add(callback);
+    }
+
     public void AddResourcePart<TPart>(string resourceName, TPart part) where TPart : ResourcePart
     {
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
@@ -60,7 +66,7 @@ public class ResourceManager
         Log.Debug("Releasing resource {Resource} part {Part}", resourceName, part.Name);
 
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
-        part.GrantedToPid = null;
+        resource.SetGrantedToPid(part, null);
         
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)
