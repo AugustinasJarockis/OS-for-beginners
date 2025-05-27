@@ -1,6 +1,7 @@
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.Files;
 using OperatingSystem.ResourceManagement.ResourceParts;
+using System.Security.Cryptography;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -145,8 +146,12 @@ public class CLIProc : ProcessProgram
                     return 1;
                 }
             case 13: {
-                    // TODO: validation?
                     var handle = FileSystem.CreateFile(_inputTokens[1]);
+                    if (handle == null) {
+                        PrintMessage($"File with name {_inputTokens[1]} already exists");
+                        return 1;
+                    }
+                    PrintMessage($"Succesfully created file with name {_inputTokens[1]}");
                     return 1;
                 }
             case 14: {
