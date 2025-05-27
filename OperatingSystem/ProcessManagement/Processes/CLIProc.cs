@@ -18,9 +18,7 @@ public class CLIProc : ProcessProgram
     private void OnFocusedProcessChange(string _, ushort? processId) => _focusedProcessId = processId;
 
     private ushort? _focusedProcessId;
-
-    private string input = "";
-    private List<string> inputTokens;
+    private List<string> _inputTokens;
 
     protected override int Next()
     {
@@ -38,65 +36,67 @@ public class CLIProc : ProcessProgram
             }
             case 2:
             {
-                input = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData)).Text;
+                var input = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData)).Text;
+                _inputTokens = input.Trim().ToLower().Split(' ').Select(token => token.Trim()).ToList();
 
-                // TODO: remove this, this is example how to use terminal
-                // _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
-                // {
-                //     Name = nameof(TerminalOutputData),
-                //     IsSingleUse = true,
-                //     ProcessId = _processManager.CurrentProcessId,
-                //     Text = userInput.Text
-                // });
-                return 3;
-            }
-            case 3: {
-                    inputTokens = input.Trim().ToLower().Split(' ').Select(token => token.Trim()).ToList();
-                    return 4;
-                }
-            case 4: {
-                    switch (inputTokens[0]) {
-                        case "start": {
-                                return 5;
-                            }
-                        case "process": {
-                                return 6;
-                            }
-                        case "focus": {
-                                return 7;
-                            }
-                        case "kill": {
-                                return 8;
-                            }
-                        case "suspend": {
-                                return 9;
-                            }
-                        case "unsuspend": {
-                                return 10;
-                            }
-                        case "shutdown": {
-                                return 11;
-                            }
-                        case "dir": {
-                                return 12;
-                            }
-                        case "create": {
-                                return 13;
-                            }
-                        case "delete": {
-                                return 14;
-                            }
-                        case "write": {
-                                return 15;
-                            }
-                        case "display": {
-                                return 16;
-                            }
-                        default: {
-                                return 17;
-                            }
+                switch (_inputTokens[0])
+                {
+                    case "start":
+                    {
+                        return 5;
+                    }
+                    case "process":
+                    {
+                        return 6;
+                    }
+                    case "focus":
+                    {
+                        return 7;
+                    }
+                    case "kill":
+                    {
+                        return 8;
+                    }
+                    case "suspend":
+                    {
+                        return 9;
+                    }
+                    case "unsuspend":
+                    {
+                        return 10;
+                    }
+                    case "shutdown":
+                    {
+                        return 11;
+                    }
+                    case "dir":
+                    {
+                        return 12;
+                    }
+                    case "create":
+                    {
+                        return 13;
+                    }
+                    case "delete":
+                    {
+                        return 14;
+                    }
+                    case "write":
+                    {
+                        return 15;
+                    }
+                    case "display":
+                    {
+                        return 16;
+                    }
+                    default:
+                    {
+                        return 17;
                     }
                 }
+
+                return 3;
+            }
             case 5: {
                     //TODO: Implement file start
                     return 0;
@@ -109,7 +109,7 @@ public class CLIProc : ProcessProgram
                     // TODO: error handling
                     // TODO: check if id exists
                     ushort pid;
-                    ushort.TryParse(inputTokens[1], out pid);
+                    ushort.TryParse(_inputTokens[1], out pid);
                     _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
                     return 0;
                 }
@@ -117,7 +117,7 @@ public class CLIProc : ProcessProgram
                     // TODO: error handling
                     // TODO: check if id exists
                     ushort pid;
-                    ushort.TryParse(inputTokens[1], out pid);
+                    ushort.TryParse(_inputTokens[1], out pid);
                     // TODO: Kill process
                     return 0;
                 }
