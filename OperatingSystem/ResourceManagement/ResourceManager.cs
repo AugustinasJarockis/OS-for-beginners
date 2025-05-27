@@ -79,12 +79,18 @@ public class ResourceManager
     {
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         var part = resource.Parts.First(p => p.Name == partName);
+        var oldOwnerPid = part.GrantedToPid;
         resource.SetGrantedToPid(part, newOwnerPid);
         
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)
         {
             _processManager.ActivateProcess(pid);
+        }
+        
+        if (oldOwnerPid.HasValue && !pidsGrantedResource.Contains(oldOwnerPid.Value))
+        {
+            _processManager.SuspendProcess(oldOwnerPid.Value);
         }
     }
 
