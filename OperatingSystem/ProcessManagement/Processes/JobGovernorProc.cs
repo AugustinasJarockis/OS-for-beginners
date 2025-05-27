@@ -54,15 +54,15 @@ public class JobGovernorProc : ProcessProgram
                 for (var i = 0; i < _machineCode.Count; i++)
                     _memoryManager.SetDWord((ulong) i * 4, _machineCode[i]);
 
+                var registers = new uint[12];
+                registers[(int)Register.SP] = (uint)_machineCode.Count * 4;
+                registers[(int)Register.PTBR] = _memoryManager.GetPageTableAddress(_processManager.CurrentProcessId);
+                
                 _vmName = $"{nameof(VMProc)}_{_programName}";
                 _vmPid = _processManager.CreateProcess(
                     _vmName,
-                    new VMProc(_programName, _resourceManager, _processor)
+                    new VMProc(_programName, _resourceManager, _processor, registers)
                 );
-
-                _processor.registers[(int)Register.SP] = (uint)_machineCode.Count * 4;
-                _processor.registers[(int)Register.PTBR] = _memoryManager.GetPageTableAddress(_processManager.CurrentProcessId);
-                FlagUtils.SetModeFlag(_processor);
 
                 return CurrentStep + 1;
             }
@@ -82,10 +82,6 @@ public class JobGovernorProc : ProcessProgram
                     $"{nameof(JobGovernorInterruptData)}_{_programName}"
                 );
                 
-                _processManager.UpdateProcessRegisters(_vmPid, _processor.registers);
-                _processManager.SuspendProcess(_vmPid);
-                FlagUtils.ClearModeFlag(_processor);
-
                 if (_interruptData.InterruptCode is
                     InterruptCodes.DivByZero or
                     InterruptCodes.InvalidOpCode or 
@@ -109,10 +105,6 @@ public class JobGovernorProc : ProcessProgram
             }
             case 4:
             {
-                var registers = _processManager.GetProcessRegisters(_vmPid);
-                _processor.UpdateRegisters(registers);
-                FlagUtils.SetModeFlag(_processor);
-                
                 _processManager.ActivateProcess(_vmPid);
                 
                 _resourceManager.AddResourcePart(

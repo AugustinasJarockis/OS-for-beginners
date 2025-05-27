@@ -82,18 +82,6 @@ public class ProcessManager
         }
     }
 
-    public void UpdateProcessRegisters(int processId, uint[] registers)
-    {
-        var process = _processes.First(x => x.Id == processId);
-        process.UpdateRegisters(registers);
-    }
-
-    public uint[] GetProcessRegisters(int processId)
-    {
-        var process = _processes.First(x => x.Id == processId);
-        return process.Registers;
-    }
-
     public void HandlePeriodicInterrupt()
     {
         if (CurrentProcess is null)
