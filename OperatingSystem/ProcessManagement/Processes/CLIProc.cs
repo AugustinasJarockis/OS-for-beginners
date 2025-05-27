@@ -1,7 +1,6 @@
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.Files;
 using OperatingSystem.ResourceManagement.ResourceParts;
-using System.Security.Cryptography;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -20,111 +19,126 @@ public class CLIProc : ProcessProgram
 
     private ushort? _focusedProcessId;
     private List<string> _inputTokens;
+    private FileHandleData fileHandle;
+    int returnCase = 1;
 
     protected override int Next()
     {
-        switch (CurrentStep)
-        {
-            case 0:
-            {
-                _resourceManager.RequestResource(ResourceNames.Focus, nameof(FocusData));
-                return CurrentStep + 1;
-            }
-            case 1:
-            {
-                _resourceManager.RequestResource(ResourceNames.UserInput, nameof(UserInputData));
-                return CurrentStep + 1;
-            }
-            case 2:
-            {
-                var input = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData)).Text;
-                _inputTokens = input.Trim().ToLower().Split(' ').Select(token => token.Trim()).ToList();
+        switch (CurrentStep) {
+            case 0: {
+                    _resourceManager.RequestResource(ResourceNames.Focus, nameof(FocusData));
+                    return CurrentStep + 1;
+                }
+            case 1: {
+                    _resourceManager.RequestResource(ResourceNames.UserInput, nameof(UserInputData));
+                    return CurrentStep + 1;
+                }
+            case 2: {
+                    var input = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData)).Text;
+                    _inputTokens = input.Trim().ToLower().Split(' ').Select(token => token.Trim()).ToList();
 
-                return _inputTokens[0] switch
-                {
-                    "start" => 5,
-                    "process" => 6,
-                    "focus" => 7,
-                    "kill" => 8,
-                    "suspend" => 9,
-                    "unsuspend" => 10,
-                    "shutdown" => 11,
-                    "dir" => 12,
-                    "create" => 13,
-                    "delete" => 14,
-                    "write" => 15,
-                    "display" => 16,
-                    _ => 17
-                };
-            }
+                    switch (_inputTokens[0]) {
+                        case "start": {
+                                return 5;
+                                }
+                        case "process": {
+                            return 6; 
+                        }
+                        case "focus": {
+                            return 7; 
+                        }
+                        case "kill": {
+                            return 8;
+                        }
+                        case "suspend": {
+                            return 9;   
+                        }
+                        case "unsuspend": {
+                            return 10;
+                        }
+                        case "shutdown": {
+                            return 11;
+                        }
+                        case "dir": {
+                            return 12;
+                        }
+                        case "create": {
+                            return 13;
+                        }
+                        case "delete": {
+                            returnCase = 14;
+                            return 17;
+                        }
+                        case "write": {
+                            returnCase = 15;
+                            return 17;
+                        }
+                        case "display": {
+                            returnCase = 16;
+                            return 17;
+                        }
+                        default: {
+                            return 18;
+                        }
+                    };
+                }
             case 5: {
                     //TODO: Implement file start
                     return 1;
                 }
-            case 6:
-            {
-                foreach (var process in _processManager.Processes)
-                {
-                    PrintMessage($"Process: {process.Name}; PID: {process.Id}; State: {process.State}");
-                }
-                
-                return 1;
-            }
-            case 7:
-            {
-                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
-                {
-                    PrintMessage("Expected format: 'focus [PID]'");
-                    return 1;
-                }
+            case 6: {
+                    foreach (var process in _processManager.Processes) {
+                        PrintMessage($"Process: {process.Name}; PID: {process.Id}; State: {process.State}");
+                    }
 
-                if (!_processManager.ProcessExists(pid))
-                {
-                    PrintMessage($"Process not found by pid {pid}");
                     return 1;
                 }
+            case 7: {
+                    if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid)) {
+                        PrintMessage("Expected format: 'focus [PID]'");
+                        return 1;
+                    }
 
-                if (_processManager.IsSystemProcess(pid))
-                {
-                    PrintMessage("System process cannot be focused");
-                    return 1;
-                }
-                
-                _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
-                
-                return 1;
-            }
-            case 8:
-            {
-                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
-                {
-                    PrintMessage("Expected format: 'kill [PID]'");
-                    return 1;
-                }
+                    if (!_processManager.ProcessExists(pid)) {
+                        PrintMessage($"Process not found by pid {pid}");
+                        return 1;
+                    }
 
-                if (!_processManager.ProcessExists(pid))
-                {
-                    PrintMessage($"Process not found by pid {pid}");
+                    if (_processManager.IsSystemProcess(pid)) {
+                        PrintMessage("System process cannot be focused");
+                        return 1;
+                    }
+
+                    _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
+
                     return 1;
                 }
+            case 8: {
+                    if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid)) {
+                        PrintMessage("Expected format: 'kill [PID]'");
+                        return 1;
+                    }
 
-                if (_processManager.IsSystemProcess(pid))
-                {
-                    PrintMessage("System process cannot be killed");
+                    if (!_processManager.ProcessExists(pid)) {
+                        PrintMessage($"Process not found by pid {pid}");
+                        return 1;
+                    }
+
+                    if (_processManager.IsSystemProcess(pid)) {
+                        PrintMessage("System process cannot be killed");
+                        return 1;
+                    }
+
+                    var processName = _processManager.FindProcessById(pid).Parent!.Name;
+                    _resourceManager.AddResourcePart(ResourceNames.ProgramInMemory, new ProgramInMemoryData {
+                        IsSingleUse = true,
+                        IsEnd = true,
+                        Name = nameof(ProgramInMemoryData),
+                        JobGovernorId = processName
+                    });
+
                     return 1;
                 }
-
-                var processName = _processManager.FindProcessById(pid).Parent!.Name;
-                _resourceManager.AddResourcePart(ResourceNames.ProgramInMemory, new ProgramInMemoryData
-                {
-                    IsSingleUse = true,
-                    IsEnd = true,
-                    Name = nameof(ProgramInMemoryData),
-                    JobGovernorId = processName
-                });
-                
-                return 1;
-            }
             case 9: {
                     // TODO: make suspend
                     return 1;
@@ -133,40 +147,69 @@ public class CLIProc : ProcessProgram
                     // TODO: make unsuspend
                     return 1;
                 }
-            case 11:
-            {
-                _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData {
-                    Name = nameof(OsShutdownData),
-                    IsSingleUse = true,
-                });
-                return 1;
-            }
+            case 11: {
+                    _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData {
+                        Name = nameof(OsShutdownData),
+                        IsSingleUse = true,
+                    });
+                    return 1;
+                }
             case 12: {
-                    // TODO: make dir
+                    var fileList = FileSystem.GetFileList();
+                    PrintMessage("All files in the system: ");
+                    foreach (var file in fileList) {
+                        PrintMessage(file);
+                    }
                     return 1;
                 }
             case 13: {
-                    var handle = FileSystem.CreateFile(_inputTokens[1]);
-                    if (handle == null) {
+                    if (_inputTokens.Count < 2 || String.IsNullOrEmpty(_inputTokens[1])) {
+                        PrintMessage("Expected format: 'create [filename]'");
+                        return 1;
+                    }
+
+                    fileHandle = FileSystem.CreateFile(_inputTokens[1]);
+                    if (fileHandle == null) {
                         PrintMessage($"File with name {_inputTokens[1]} already exists");
                         return 1;
                     }
+                    _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
                     PrintMessage($"Succesfully created file with name {_inputTokens[1]}");
                     return 1;
                 }
             case 14: {
-                    // TODO: make delete
+                    fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, _inputTokens[1]);
+
+                    if (!FileSystem.DeleteFile(fileHandle)) {
+                        PrintMessage($"File with name {_inputTokens[1]} was not found");
+                        return 1;
+                    }
+                    _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
+                    PrintMessage($"File with name {_inputTokens[1]} was succesfully deleted");
                     return 1;
                 }
             case 15: {
-                    // TODO: make write
+                    fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, _inputTokens[1]);
+                    FileSystem.OverwriteFile(fileHandle, [_inputTokens[2]]);
+                    _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
                     return 1;
                 }
             case 16: {
-                    // TODO: make display
+                    fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, _inputTokens[1]);
+                    PrintMessage(FileSystem.ReadFile(fileHandle)[0]);
+                    _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
                     return 1;
                 }
-            case 17:
+            case 17: {
+                    if (_inputTokens.Count < 2 || String.IsNullOrEmpty(_inputTokens[1])) {
+                        PrintMessage($"Expected format: '{_inputTokens[0]} [filename]'");
+                        return 1;
+                    }
+
+                    _resourceManager.RequestResource(ResourceNames.FileHandle, _inputTokens[1]);
+                    return returnCase;
+                }
+            case 18:
             {
                 PrintMessage("Unknown command");    
                 return 1;

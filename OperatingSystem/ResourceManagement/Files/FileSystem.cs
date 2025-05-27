@@ -35,6 +35,10 @@ public static class FileSystem
             };
         }
     }
+
+    public static List<string> GetFileList() {
+        return _blocksByFileName.Keys.ToList();
+    }
     
     public static FileHandleData? CreateFile(string fileName)
     {
@@ -54,23 +58,21 @@ public static class FileSystem
         Log.Information("File {FileName} created by pid {Pid}", fileName, _processManager.CurrentProcessId);
         return fileHandle;
     }
-    
-    public static void DeleteFile(FileHandleData fileHandle)
+    public static bool DeleteFile(FileHandleData fileHandle) 
     {
-        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var blocks))
-        {
-            return;
+        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var blocks)) {
+            return false;
         }
-        
-        foreach (var block in blocks)
-        {
+
+        foreach (var block in blocks) {
             _externalStorage.WriteBlock(block.BlockIndex, EmptyBlock);
             block.AllocatedToPid = null;
         }
 
         _blocksByFileName.Remove(fileHandle.Name);
-        
+
         Log.Information("File {FileName} deleted by pid {Pid}", fileHandle.Name, fileHandle.GrantedToPid);
+        return true;
     }
 
     public static void OverwriteFile(FileHandleData fileHandle, string[] content)
