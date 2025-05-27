@@ -91,11 +91,9 @@ public class CLIProc : ProcessProgram
                     }
                     default:
                     {
-                        return 17;
+                        return 1;
                     }
                 }
-
-                return 3;
             }
             case 5: {
                     //TODO: Implement file start
