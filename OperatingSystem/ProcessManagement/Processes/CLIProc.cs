@@ -39,61 +39,22 @@ public class CLIProc : ProcessProgram
                 var input = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData)).Text;
                 _inputTokens = input.Trim().ToLower().Split(' ').Select(token => token.Trim()).ToList();
 
-                switch (_inputTokens[0])
+                return _inputTokens[0] switch
                 {
-                    case "start":
-                    {
-                        return 5;
-                    }
-                    case "process":
-                    {
-                        return 6;
-                    }
-                    case "focus":
-                    {
-                        return 7;
-                    }
-                    case "kill":
-                    {
-                        return 8;
-                    }
-                    case "suspend":
-                    {
-                        return 9;
-                    }
-                    case "unsuspend":
-                    {
-                        return 10;
-                    }
-                    case "shutdown":
-                    {
-                        return 11;
-                    }
-                    case "dir":
-                    {
-                        return 12;
-                    }
-                    case "create":
-                    {
-                        return 13;
-                    }
-                    case "delete":
-                    {
-                        return 14;
-                    }
-                    case "write":
-                    {
-                        return 15;
-                    }
-                    case "display":
-                    {
-                        return 16;
-                    }
-                    default:
-                    {
-                        return 1;
-                    }
-                }
+                    "start" => 5,
+                    "process" => 6,
+                    "focus" => 7,
+                    "kill" => 8,
+                    "suspend" => 9,
+                    "unsuspend" => 10,
+                    "shutdown" => 11,
+                    "dir" => 12,
+                    "create" => 13,
+                    "delete" => 14,
+                    "write" => 15,
+                    "display" => 16,
+                    _ => 1
+                };
             }
             case 5: {
                     //TODO: Implement file start
