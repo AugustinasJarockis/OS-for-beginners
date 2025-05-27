@@ -48,14 +48,14 @@ public class StartStopProc : ProcessProgram
                 _resourceManager.CreateResource(ResourceNames.NonExistent, [], new NonExistentResourceScheduler());
                 _resourceManager.CreateResource(ResourceNames.FromInterrupt, [], new FromInterruptScheduler());
                 _resourceManager.CreateResource(ResourceNames.ProgramInMemory, [], new ProgramInMemoryScheduler());
-                _resourceManager.CreateResource(ResourceNames.FileOperation, [], new FileOperationScheduler());
                 _resourceManager.CreateResource(ResourceNames.FileHandle, [], new FileHandleScheduler());
+                _resourceManager.CreateResource(ResourceNames.TerminalOutput, [], new TerminalOutputScheduler());
                 
                 _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _memoryManager));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
                 _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager));
-                _processManager.CreateProcess(nameof(FileManagerProc), new FileManagerProc(_resourceManager));
+                _processManager.CreateProcess(nameof(TerminalOutputProc), new TerminalOutputProc(_resourceManager));
 
                 TransferDataFileToExternalStorage("test.txt");
                 LoadProgram("test.txt");
@@ -98,9 +98,41 @@ public class StartStopProc : ProcessProgram
         _resourceManager.RequestResource(ResourceNames.FileHandle, fileName);
         var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
         var content = _fileSystem.ReadFile(fileHandle);
+        _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
+
+        if (content is null)
+        {
+            _resourceManager.AddResourcePart(
+                ResourceNames.TerminalOutput,
+                new TerminalOutputData
+                {
+                    Name = nameof(TerminalOutputData),
+                    IsSingleUse = true,
+                    Text = $"Failed to read from file {fileName}",
+                    ProcessId = _processManager.CurrentProcessId
+                });
+            return;
+        }
         
-        // TODO: add validation here - just catch exception and print error to terminal
-        var machineCode = MachineCodeAssembler.ToMachineCode(content);
+        List<uint> machineCode;
+        try
+        {
+            machineCode = MachineCodeAssembler.ToMachineCode(content);
+        }
+        catch (Exception ex)
+        {
+            _resourceManager.AddResourcePart(
+                ResourceNames.TerminalOutput,
+                new TerminalOutputData
+                {
+                    Name = nameof(TerminalOutputData),
+                    IsSingleUse = true,
+                    Text = $"Program {fileName} code is incorrect: {ex.Message}",
+                    ProcessId = _processManager.CurrentProcessId
+                });
+            return;
+        }
+        
         _resourceManager.AddResourcePart(
             ResourceNames.ProgramInMemory,
             new ProgramInMemoryData

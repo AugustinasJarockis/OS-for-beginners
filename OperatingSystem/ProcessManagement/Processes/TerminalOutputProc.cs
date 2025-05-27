@@ -3,13 +3,11 @@ using OperatingSystem.ResourceManagement.ResourceParts;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
-public class FileManagerProc : ProcessProgram
+public class TerminalOutputProc : ProcessProgram
 {
     private readonly ResourceManager _resourceManager;
 
-    private FileOperationData _fileOperationData;
-
-    public FileManagerProc(ResourceManager resourceManager)
+    public TerminalOutputProc(ResourceManager resourceManager)
     {
         _resourceManager = resourceManager;
     }
@@ -20,16 +18,17 @@ public class FileManagerProc : ProcessProgram
         {
             case 0:
             {
-                _resourceManager.RequestResource(ResourceNames.FileOperation, nameof(FileOperationData));
+                _resourceManager.RequestResource(ResourceNames.TerminalOutput, nameof(TerminalOutputData));
                 return CurrentStep + 1;
             }
             case 1:
             {
-                _fileOperationData = _resourceManager.ReadResource<FileOperationData>(
-                    ResourceNames.FileOperation,
-                    nameof(FileOperationData)
-                );
-
+                var terminalOutputData = _resourceManager.ReadResource<TerminalOutputData>(ResourceNames.TerminalOutput, nameof(TerminalOutputData));
+                
+                // TODO: we should check here if the process has focus
+                
+                Console.WriteLine(terminalOutputData.Text);
+                
                 return 0;
             }
             default:

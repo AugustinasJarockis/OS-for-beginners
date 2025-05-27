@@ -36,19 +36,23 @@ public class FileSystem
         }
     }
     
-    public void CreateFile(string fileName)
+    public FileHandleData? CreateFile(string fileName)
     {
         if (_blocksByFileName.ContainsKey(fileName))
         {
-            return;
+            return null;
         }
 
         _blocksByFileName.Add(fileName, []);
-        _resourceManager.AddResourcePart(ResourceNames.FileHandle, new FileHandleData
+        var fileHandle = new FileHandleData
         {
             Name = fileName,
             IsSingleUse = false,
-        });
+        };
+        _resourceManager.AddResourcePart(ResourceNames.FileHandle, fileHandle);
+        
+        Log.Information("File {FileName} created by pid {Pid}", fileName, _processManager.CurrentProcessId);
+        return fileHandle;
     }
     
     public void DeleteFile(FileHandleData fileHandle)
@@ -65,11 +69,14 @@ public class FileSystem
         }
 
         _blocksByFileName.Remove(fileHandle.Name);
+        
+        Log.Information("File {FileName} deleted by pid {Pid}", fileHandle.Name, fileHandle.GrantedToPid);
     }
 
     public void OverwriteFile(FileHandleData fileHandle, string[] content)
     {
-        Log.Information("Writing to file {FileName}", fileHandle.Name);
+        var currentProcessId = _processManager.CurrentProcessId;
+        Log.Information("Overwriting file {FileName} by pid {Pid}", fileHandle.Name, currentProcessId);
 
         DeleteFile(fileHandle);
         
@@ -90,8 +97,7 @@ public class FileSystem
         {
             return;
         }
-
-        var currentProcessId = _processManager.CurrentProcessId;
+        
         for (var i = 0; i < blocksAllocatedToRequester.Count; i++)
         {
             var block = blocksAllocatedToRequester[i];
@@ -101,15 +107,20 @@ public class FileSystem
         }
 
         _blocksByFileName[fileHandle.Name] = blocksAllocatedToRequester;
+        
+        Log.Information("Allocated {BlockCount} external storage blocks to file {FileName} for pid {Pid}", blocksAllocatedToRequester.Count, fileHandle.Name, currentProcessId);
     }
 
-    public string[] ReadFile(FileHandleData fileHandle)
+    public string[]? ReadFile(FileHandleData fileHandle)
     {
         Log.Information("Reading from file {FileName}", fileHandle.Name);
-        
-        var blocksMetadata = _blocksByFileName[fileHandle.Name];
-        List<string> content = [];
 
+        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var blocksMetadata))
+        {
+            return null;
+        }
+        
+        List<string> content = [];
         foreach (var blockMetadata in blocksMetadata)
         {
             var block = _externalStorage.ReadBlock(blockMetadata.BlockIndex);
