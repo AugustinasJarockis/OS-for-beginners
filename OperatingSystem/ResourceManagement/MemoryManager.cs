@@ -96,28 +96,13 @@ public class MemoryManager
 
         for (var i = 0; i < maxStrLength; i++)
         {
-            var physicalAddress = CalculatePhysicalAddress(virtualAddress + (ulong)(i * 4), _processManager.CurrentProcessId);
-            var value = _ram.GetDWord(physicalAddress);
-            var ch1 = (char)((value & 0xFF000000) >> 24);
-            var ch2 = (char)((value & 0x00FF0000) >> 16);
-            var ch3 = (char)((value & 0x0000FF00) >> 8);
-            var ch4 = (char)(value & 0x000000FF);
+            var physicalAddress = CalculatePhysicalAddress(virtualAddress + (ulong)i, _processManager.CurrentProcessId);
+            var ch = (char)_ram.GetByte(physicalAddress);
 
-            if (ch1 == 0)
+            if (ch == 0)
                 break;
-            strBuilder.Append(ch1);
-
-            if (ch2 == 0)
-                break;
-            strBuilder.Append(ch2);
             
-            if (ch3 == 0)
-                break;
-            strBuilder.Append(ch3);
-            
-            if (ch4 == 0)
-                break;
-            strBuilder.Append(ch4);
+            strBuilder.Append(ch);
         }
         
         return strBuilder.ToString();
