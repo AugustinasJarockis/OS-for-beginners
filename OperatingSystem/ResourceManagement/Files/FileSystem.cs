@@ -3,6 +3,7 @@ using OperatingSystem.Hardware;
 using OperatingSystem.Hardware.Constants;
 using OperatingSystem.ProcessManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
+using Serilog;
 
 namespace OperatingSystem.ResourceManagement.Files;
 
@@ -15,6 +16,8 @@ public class FileSystem
     private readonly ResourceManager _resourceManager;
     private readonly ExternalStorageBlockMetadata[] _blocksMetadata;
     private readonly Dictionary<string, List<ExternalStorageBlockMetadata>> _blocksByFileName = new();
+
+    private static readonly uint[] EmptyBlock = new uint[ExternalStorage.BLOCK_SIZE];
 
     public FileSystem(ExternalStorage externalStorage, ProcessManager processManager, ResourceManager resourceManager)
     {
@@ -47,11 +50,32 @@ public class FileSystem
             IsSingleUse = false,
         });
     }
-
-    public void WriteFile(FileHandleData fileHandle, string[] content)
+    
+    public void DeleteFile(FileHandleData fileHandle)
     {
-        var blocksToWrite = SplitToBlocks(content);
+        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var blocks))
+        {
+            return;
+        }
+        
+        foreach (var block in blocks)
+        {
+            _externalStorage.WriteBlock(block.BlockIndex, EmptyBlock);
+            block.AllocatedToPid = null;
+        }
 
+        _blocksByFileName.Remove(fileHandle.Name);
+    }
+
+    public void OverwriteFile(FileHandleData fileHandle, string[] content)
+    {
+        Log.Information("Writing to file {FileName}", fileHandle.Name);
+
+        DeleteFile(fileHandle);
+        
+        // TODO: here should be a call to scheduler, but lets assume that we always have enough external storage :)
+        
+        var blocksToWrite = SplitToBlocks(content);
         List<ExternalStorageBlockMetadata> blocksAllocatedToRequester = [];
         for (var i = 0; i < blocksToWrite.Length; i++)
         {
@@ -75,11 +99,39 @@ public class FileSystem
             var data = StringToUIntArray(blocksToWrite[i]);
             _externalStorage.WriteBlock(block.BlockIndex, data);
         }
+
+        _blocksByFileName[fileHandle.Name] = blocksAllocatedToRequester;
     }
 
     public string[] ReadFile(FileHandleData fileHandle)
     {
+        Log.Information("Reading from file {FileName}", fileHandle.Name);
         
+        var blocksMetadata = _blocksByFileName[fileHandle.Name];
+        List<string> content = [];
+
+        foreach (var blockMetadata in blocksMetadata)
+        {
+            var block = _externalStorage.ReadBlock(blockMetadata.BlockIndex);
+            var strBuilder = new StringBuilder();
+            foreach (var part in block)
+            {
+                var ch1 = (char)((part & 0xFFFF0000) >> 16);
+                var ch2 = (char)(part & 0x0000FFFF);
+
+                if (ch1 == 0)
+                    break;
+                strBuilder.Append(ch1);
+
+                if (ch2 == 0)
+                    break;
+                strBuilder.Append(ch2);
+            }
+
+            content.AddRange(strBuilder.ToString().Split(Environment.NewLine));
+        }
+
+        return content.ToArray();
     }
 
     private static string[] SplitToBlocks(string[] content)

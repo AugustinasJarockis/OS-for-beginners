@@ -83,7 +83,7 @@ public class MemoryManager
             page.AllocatedToPid = null;
         }
         
-        Log.Information("Freed {PageCount} pages of memory from process by id {Pid}", pages.Count, currentProcessId);
+        Log.Information("Freed {PageCount} pages of memory from pid {Pid}", pages.Count, currentProcessId);
 
         _allocatedPagesByPid.Remove(currentProcessId);
     }
@@ -142,7 +142,7 @@ public class MemoryManager
                 _allocatedPagesByPid[requester.ProcessId] = pagesAllocatedToRequester;
             }
             
-            Log.Information("Allocated {Pages} memory pages to process by id {Pid}", pagesAllocatedToRequester.Count, requester.ProcessId);
+            Log.Information("Allocated {Pages} memory pages to pid {Pid}", pagesAllocatedToRequester.Count, requester.ProcessId);
 
             var processPages = _allocatedPagesByPid[requester.ProcessId];
             SetPageTableLength(requester.ProcessId, processPages.Count);

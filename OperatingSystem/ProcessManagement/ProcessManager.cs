@@ -37,7 +37,7 @@ public class ProcessManager
 
         _processes.Add(process);
         
-        Log.Information("Created process {ProcessName} with id {Pid}", processName, process.Id);
+        Log.Information("Created process {ProcessName} with pid {Pid}", processName, process.Id);
         
         return process.Id;
     }

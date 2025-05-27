@@ -58,22 +58,7 @@ public class StartStopProc : ProcessProgram
                 _processManager.CreateProcess(nameof(FileManagerProc), new FileManagerProc(_resourceManager));
 
                 TransferDataFileToExternalStorage("test.txt");
-                
-                // TODO: take this from CLI
-                var codeFilePath = Path.Join(Environment.CurrentDirectory, "Data", "test.txt");
-                var machineCode = MachineCodeAssembler.ToMachineCode(codeFilePath);
-                _resourceManager.AddResourcePart(
-                    ResourceNames.ProgramInMemory,
-                    new ProgramInMemoryData
-                    {
-                        Name = nameof(ProgramInMemoryData),
-                        MachineCode = machineCode,
-                        IsSingleUse = true
-                    }
-                );
-                
-                
-                
+                LoadProgram("test.txt");
 
                 return CurrentStep + 1;
             }
@@ -104,7 +89,27 @@ public class StartStopProc : ProcessProgram
         var dataFilePath = Path.Join(Environment.CurrentDirectory, "Data", fileName);
         var lines = File.ReadAllLines(dataFilePath);
         
-        _fileSystem.WriteFile(fileHandle, lines);
+        _fileSystem.OverwriteFile(fileHandle, lines);
         _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
+    }
+
+    private void LoadProgram(string fileName)
+    {
+        _resourceManager.RequestResource(ResourceNames.FileHandle, fileName);
+        var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
+        var content = _fileSystem.ReadFile(fileHandle);
+        
+        // TODO: add validation here - just catch exception and print error to terminal
+        var machineCode = MachineCodeAssembler.ToMachineCode(content);
+        _resourceManager.AddResourcePart(
+            ResourceNames.ProgramInMemory,
+            new ProgramInMemoryData
+            {
+                Name = nameof(ProgramInMemoryData),
+                ProgramName = fileName,
+                MachineCode = machineCode,
+                IsSingleUse = true
+            }
+        );
     }
 }

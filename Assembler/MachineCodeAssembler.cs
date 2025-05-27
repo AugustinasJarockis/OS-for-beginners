@@ -15,6 +15,19 @@ public static class MachineCodeAssembler
         return machineCode;
     }
 
+    public static List<uint> ToMachineCode(string[] instructions)
+    {
+        List<uint> machineCode= [];
+
+        foreach (var instruction in instructions)
+        {
+            var instructionMachineCode = InstructionToMachineCode(instruction);
+            machineCode.Add(instructionMachineCode);
+        }
+
+        return machineCode;
+    }
+    
     private static uint InstructionToMachineCode(string instruction)
     {
         var (mnemonic, rest) = ParseNextInstructionValue(instruction);
