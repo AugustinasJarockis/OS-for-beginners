@@ -14,13 +14,13 @@ public class UserInputScheduler : ResourceSchedulerBase<UserInputData>
     public override List<ushort> Run(Resource<UserInputData> resource)
     {
         if (resource.Parts.Count == 0)
-        {
+{
             return [];
         }
         
         var requester = resource.Requesters.FirstOrDefault(x => x.ProcessId == _focusedProcessId);
         if (requester is null)
-        {
+    {
             return [];
         }
 

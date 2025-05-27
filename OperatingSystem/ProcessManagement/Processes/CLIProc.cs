@@ -1,5 +1,6 @@
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
+using OperatingSystem.ResourceManagement.Schedulers;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -12,7 +13,14 @@ public class CLIProc : ProcessProgram
     {
         _resourceManager = resourceManager;
         _processManager = processManager;
+        _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, OnFocusedProcessChange);
     }
+    private void OnFocusedProcessChange(string _, ushort? processId) => _focusedProcessId = processId;
+
+    private ushort? _focusedProcessId;
+
+    private string input = "";
+    private List<string> inputTokens;
 
     protected override int Next()
     {
@@ -30,8 +38,8 @@ public class CLIProc : ProcessProgram
             }
             case 2:
             {
-                var userInput = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData));
-                
+                input = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData)).Text;
+
                 // TODO: remove this, this is example how to use terminal
                 // _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
                 // {
@@ -40,18 +48,118 @@ public class CLIProc : ProcessProgram
                 //     ProcessId = _processManager.CurrentProcessId,
                 //     Text = userInput.Text
                 // });
-                
-                if (userInput.Text == "shutdown")
-                {
-                    _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData
-                    {
+                return 3;
+            }
+            case 3: {
+                    inputTokens = input.Trim().ToLower().Split(' ').Select(token => token.Trim()).ToList();
+                    return 4;
+                }
+            case 4: {
+                    switch (inputTokens[0]) {
+                        case "start": {
+                                return 5;
+                            }
+                        case "process": {
+                                return 6;
+                            }
+                        case "focus": {
+                                return 7;
+                            }
+                        case "kill": {
+                                return 8;
+                            }
+                        case "suspend": {
+                                return 9;
+                            }
+                        case "unsuspend": {
+                                return 10;
+                            }
+                        case "shutdown": {
+                                return 11;
+                            }
+                        case "dir": {
+                                return 12;
+                            }
+                        case "create": {
+                                return 13;
+                            }
+                        case "delete": {
+                                return 14;
+                            }
+                        case "write": {
+                                return 15;
+                            }
+                        case "display": {
+                                return 16;
+                            }
+                        default: {
+                                return 17;
+                            }
+                    }
+                }
+            case 5: {
+                    //TODO: Implement file start
+                    return 0;
+                }
+            case 6: {
+                    //TODO: Print all processes
+                    return 0;
+                }
+            case 7: {
+                    // TODO: error handling
+                    // TODO: check if id exists
+                    ushort pid;
+                    ushort.TryParse(inputTokens[1], out pid);
+                    _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
+                    return 0;
+                }
+            case 8: {
+                    // TODO: error handling
+                    // TODO: check if id exists
+                    ushort pid;
+                    ushort.TryParse(inputTokens[1], out pid);
+                    // TODO: Kill process
+                    return 0;
+                }
+            case 9: {
+                    // TODO: make suspend
+                    return 0;
+                }
+            case 10: {
+                    // TODO: make unsuspend
+                    return 0;
+                }
+            case 11: {
+                    _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData {
                         Name = nameof(OsShutdownData),
                         IsSingleUse = true,
                     });
+                    return 0;
                 }
-                
-                return 1;
-            }
+            case 12: {
+                    // TODO: make dir
+                    return 0;
+                }
+            case 13: {
+                    // TODO: make create
+                    return 0;
+                }
+            case 14: {
+                    // TODO: make delete
+                    return 0;
+                }
+            case 15: {
+                    // TODO: make write
+                    return 0;
+                }
+            case 16: {
+                    // TODO: make display
+                    return 0;
+                }
+            case 17: {
+                    // TODO: implement error handling
+                    return 0;
+                }
             default:
                 return 0;
         }
