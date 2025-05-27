@@ -4,6 +4,7 @@ using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.Files;
 using OperatingSystem.ResourceManagement.ResourceParts;
 using OperatingSystem.ResourceManagement.Schedulers;
+using Serilog;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -64,6 +65,10 @@ public class StartStopProc : ProcessProgram
                 {
                     Name = nameof(FocusData),
                     IsSingleUse = false,
+                });
+                _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, (_, grantedToPid) =>
+                {
+                    Log.Information("Focused pid {Pid}", grantedToPid);
                 });
 
                 TransferDataFileToExternalStorage("test.txt");
