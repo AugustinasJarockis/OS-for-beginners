@@ -52,7 +52,7 @@ public class CLIProc : ProcessProgram
                     "delete" => 14,
                     "write" => 15,
                     "display" => 16,
-                    _ => 1
+                    _ => 17
                 };
             }
             case 5: {
@@ -62,15 +62,31 @@ public class CLIProc : ProcessProgram
             case 6: {
                     //TODO: Print all processes
                     return 1;
+            }
+            case 7:
+            {
+                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
+                {
+                    PrintMessage("Expected format: 'focus [PID]'");
+                    return 1;
                 }
-            case 7: {
-                    // TODO: error handling
-                    // TODO: check if id exists
-                    ushort pid;
-                    ushort.TryParse(_inputTokens[1], out pid);
-                    _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
-                    return 0;
+
+                if (!_processManager.ProcessExists(pid))
+                {
+                    PrintMessage($"Process not found by pid {pid}");
+                    return 1;
                 }
+
+                if (_processManager.IsSystemProcess(pid))
+                {
+                    PrintMessage("System process cannot be focused");
+                    return 1;
+                }
+                
+                _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
+                
+                return 1;
+            }
             case 8: {
                     // TODO: error handling
                     // TODO: check if id exists
@@ -87,13 +103,14 @@ public class CLIProc : ProcessProgram
                     // TODO: make unsuspend
                     return 1;
                 }
-            case 11: {
-                    _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData {
-                        Name = nameof(OsShutdownData),
-                        IsSingleUse = true,
-                    });
-                    return 1;
-                }
+            case 11:
+            {
+                _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData {
+                    Name = nameof(OsShutdownData),
+                    IsSingleUse = true,
+                });
+                return 1;
+            }
             case 12: {
                     // TODO: make dir
                     return 1;
@@ -114,12 +131,24 @@ public class CLIProc : ProcessProgram
                     // TODO: make display
                     return 1;
                 }
-            case 17: {
-                    // TODO: implement error handling
-                    return 1;
-                }
+            case 17:
+            {
+                PrintMessage("Unknown command");    
+                return 1;
+            }
             default:
                 return 1;
         }
+    }
+
+    private void PrintMessage(string text)
+    {
+        _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
+        {
+            Name = nameof(TerminalOutputData),
+            IsSingleUse = true,
+            ProcessId = _processManager.CurrentProcessId,
+            Text = text,
+        });
     }
 }

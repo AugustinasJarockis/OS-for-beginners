@@ -21,7 +21,7 @@ public class ProcessManager
         _processQueue = new();
     }
     
-    public ushort CreateProcess(string processName, ProcessProgram processProgram, bool isCLI = false)
+    public ushort CreateProcess(string processName, ProcessProgram processProgram, bool isCLI = false, bool isSystem = false)
     {
         if (_processes.Any(x => x.Name == processName))
         {
@@ -30,9 +30,10 @@ public class ProcessManager
         
         var process = Process.Create(
             id: AllocateProcessId(),
-        name: processName,
-        program: processProgram,
-            parent: CurrentProcess
+            name: processName,
+            program: processProgram,
+            parent: CurrentProcess,
+            isSystem: isSystem
         );
 
         if (isCLI) {
@@ -123,6 +124,16 @@ public class ProcessManager
     public Process FindProcessByName(string processName)
     {
         return _processes.First(x => x.Name == processName);
+    }
+
+    public bool ProcessExists(ushort processId)
+    {
+        return _processes.Any(x => x.Id == processId);
+    }
+    
+    public bool IsSystemProcess(ushort processId)
+    {
+        return _processes.FirstOrDefault(x => x.Id == processId)?.IsSystem ?? false;
     }
     
     private ushort AllocateProcessId()

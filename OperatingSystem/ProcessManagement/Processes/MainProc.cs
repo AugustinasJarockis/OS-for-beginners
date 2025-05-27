@@ -55,7 +55,8 @@ public class MainProc : ProcessProgram
                             _resourceManager,
                             _processor,
                             _memoryManager
-                        )
+                        ),
+                        isSystem: true
                     );
                 }
 

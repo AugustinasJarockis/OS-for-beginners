@@ -10,12 +10,13 @@ public class Process
     public byte BasePriority { get; private set; }
     public byte Priority { get; set; }
     public ProcessProgram Program { get; init; }
+    public bool IsSystem { get; set; }
     
     private Process()
     {
     }
 
-    public static Process Create(ushort id, string name, ProcessProgram program, Process? parent)
+    public static Process Create(ushort id, string name, ProcessProgram program, Process? parent, bool isSystem = false)
     {
         return new Process
         {
@@ -27,6 +28,7 @@ public class Process
             Priority = 0,
             State = ProcessState.Ready,
             Program = program,
+            IsSystem = isSystem
         };
     }
 
