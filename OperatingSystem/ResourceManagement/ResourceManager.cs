@@ -31,12 +31,36 @@ public class ResourceManager
         _resources.Add(resource);
     }
 
+    public void ReleaseProcessResources(ushort processId)
+    {
+        Log.Information("Releasing pid {Pid} resources", processId);
+        
+        foreach (var resource in _resources)
+        {
+            resource.Release(processId);
+        }
+    }
+
     public void AddResourcePart<TPart>(string resourceName, TPart part) where TPart : ResourcePart
     {
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         resource.Parts.Add(part);
 
         Log.Debug("Adding resource {Resource} part {Part}", resourceName, part.Name);
+        
+        var pidsGrantedResource = resource.RunScheduler();
+        foreach (var pid in pidsGrantedResource)
+        {
+            _processManager.ActivateProcess(pid);
+        }
+    }
+
+    public void ReleaseResourcePart<TPart>(string resourceName, TPart part) where TPart : ResourcePart
+    {
+        Log.Debug("Releasing resource {Resource} part {Part}", resourceName, part.Name);
+
+        var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
+        part.GrantedToPid = null;
         
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)

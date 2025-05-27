@@ -32,7 +32,7 @@ public class InterruptProc : ProcessProgram
             {
                 var data = new JobGovernorInterruptData
                 {
-                    Name = $"{nameof(JobGovernorInterruptData)}_{_interruptData.JobGovernorGuid}",
+                    Name = $"{nameof(JobGovernorInterruptData)}_{_interruptData.ProgramName}",
                     InterruptCode = _interruptData.InterruptCode,
                     IsSingleUse = true
                 };

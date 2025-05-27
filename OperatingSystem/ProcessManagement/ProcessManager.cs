@@ -37,14 +37,13 @@ public class ProcessManager
 
         _processes.Add(process);
         
-        Log.Information("Created process {ProcessName} with id {Pid}", processName, process.Id);
+        Log.Information("Created process {ProcessName} with pid {Pid}", processName, process.Id);
         
         return process.Id;
     }
     
     public void KillProcess(string processName)
     {
-        Log.Information("Killing process {ProcessName}", processName);
         KillProcessRecursively(processName);
     }
 
@@ -115,11 +114,7 @@ public class ProcessManager
     private void KillProcessRecursively(string processName)
     {
         var process = FindProcessByName(processName);
-        if (process is null)
-        {
-            return;
-        }
-        
+        Log.Information("Killing process {ProcessName} with pid {Pid}", processName, process.Id);
         var childProcessNames = process.Children.Select(x => x.Name).ToList();
         foreach (var childProcessName in childProcessNames)
         {
@@ -128,6 +123,11 @@ public class ProcessManager
 
         process.Parent?.Children.Remove(process);
         _processes.Remove(process);
+    }
+    
+    public Process FindProcessByName(string processName)
+    {
+        return _processes.First(x => x.Name == processName);
     }
     
     private ushort AllocateProcessId()
@@ -143,10 +143,5 @@ public class ProcessManager
         }
         
         throw new InvalidOperationException("Could not allocate process id");
-    }
-
-    private Process? FindProcessByName(string processName)
-    {
-        return _processes.FirstOrDefault(x => x.Name == processName);
     }
 }

@@ -1,5 +1,4 @@
 using OperatingSystem.Hardware;
-using OperatingSystem.Hardware.Constants;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
 
@@ -7,19 +6,19 @@ namespace OperatingSystem.ProcessManagement.Processes;
 
 public class VMProc : ProcessProgram
 {
-    private readonly Guid _jobGovernorGuid;
+    private readonly string _programName;
     private readonly ResourceManager _resourceManager;
     private readonly Processor _processor;
     private readonly string _fromInterruptPartName;
 
     private bool _interruptOccurred;
 
-    public VMProc(Guid jobGovernorGuid, ResourceManager resourceManager, Processor processor)
+    public VMProc(string programName, ResourceManager resourceManager, Processor processor)
     {
-        _jobGovernorGuid = jobGovernorGuid;
+        _programName = programName;
         _resourceManager = resourceManager;
         _processor = processor;
-        _fromInterruptPartName = $"{nameof(FromInterruptData)}_{jobGovernorGuid}";
+        _fromInterruptPartName = $"{nameof(FromInterruptData)}_{_programName}";
     }
 
     public void OnInterrupt(byte interruptCode)
@@ -30,7 +29,7 @@ public class VMProc : ProcessProgram
             {
                 Name = nameof(InterruptData),
                 IsSingleUse = true,
-                JobGovernorGuid = _jobGovernorGuid,
+                ProgramName = _programName,
                 InterruptCode = interruptCode
             });
         

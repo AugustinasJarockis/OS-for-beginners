@@ -10,8 +10,8 @@ namespace OperatingSystem.ProcessManagement.Processes;
 public class JobGovernorProc : ProcessProgram
 {
     private const int StackSizeInBytes = 32768; // 32KB
-    
-    private readonly Guid _guid;
+
+    private readonly string _programName;
     private readonly List<uint> _machineCode;
     private readonly ProcessManager _processManager;
     private readonly ResourceManager _resourceManager;
@@ -23,14 +23,14 @@ public class JobGovernorProc : ProcessProgram
     private JobGovernorInterruptData _interruptData;
 
     public JobGovernorProc(
-        Guid guid,
+        string programName,
         List<uint> machineCode,
         ProcessManager processManager,
         ResourceManager resourceManager,
         Processor processor,
         MemoryManager memoryManager)
     {
-        _guid = guid;
+        _programName = programName;
         _machineCode = machineCode;
         _processManager = processManager;
         _resourceManager = resourceManager;
@@ -54,10 +54,10 @@ public class JobGovernorProc : ProcessProgram
                 for (var i = 0; i < _machineCode.Count; i++)
                     _memoryManager.SetDWord((ulong) i * 4, _machineCode[i]);
 
-                _vmName = $"{nameof(VMProc)}_{_guid}";
+                _vmName = $"{nameof(VMProc)}_{_programName}";
                 _vmPid = _processManager.CreateProcess(
                     _vmName,
-                    new VMProc(_guid, _resourceManager, _processor)
+                    new VMProc(_programName, _resourceManager, _processor)
                 );
 
                 _processor.registers[(int)Register.SP] = (uint)_machineCode.Count * 4;
@@ -70,7 +70,7 @@ public class JobGovernorProc : ProcessProgram
             {
                 _resourceManager.RequestResource(
                     ResourceNames.JobGovernorInterrupt,
-                    $"{nameof(JobGovernorInterruptData)}_{_guid}"
+                    $"{nameof(JobGovernorInterruptData)}_{_programName}"
                 );
 
                 return CurrentStep + 1;
@@ -79,7 +79,7 @@ public class JobGovernorProc : ProcessProgram
             {
                 _interruptData = _resourceManager.ReadResource<JobGovernorInterruptData>(
                     ResourceNames.JobGovernorInterrupt,
-                    $"{nameof(JobGovernorInterruptData)}_{_guid}"
+                    $"{nameof(JobGovernorInterruptData)}_{_programName}"
                 );
                 
                 _processManager.UpdateProcessRegisters(_vmPid, _processor.registers);
@@ -119,7 +119,7 @@ public class JobGovernorProc : ProcessProgram
                     ResourceNames.FromInterrupt,
                     new FromInterruptData
                     {
-                        Name = $"{nameof(FromInterruptData)}_{_guid}",
+                        Name = $"{nameof(FromInterruptData)}_{_programName}",
                         IsSingleUse = true,
                     });
 
@@ -129,13 +129,14 @@ public class JobGovernorProc : ProcessProgram
             {
                 _processManager.KillProcess(_vmName);
                 _memoryManager.FreeMemory();
+                _resourceManager.ReleaseProcessResources(_vmPid);
                 
                 _resourceManager.AddResourcePart(
                     ResourceNames.ProgramInMemory,
                     new ProgramInMemoryData
                     {
                         Name = nameof(ProgramInMemoryData),
-                        JobGovernorId = $"{nameof(JobGovernorProc)}_{_guid}",
+                        JobGovernorId = $"{nameof(JobGovernorProc)}_{_programName}",
                         IsSingleUse = true,
                         IsEnd = true,
                     });

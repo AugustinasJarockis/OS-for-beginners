@@ -40,15 +40,16 @@ public class MainProc : ProcessProgram
             {
                 if (_programInMemoryData.IsEnd)
                 {
+                    var jobGovernorPid = _processManager.FindProcessByName(_programInMemoryData.JobGovernorId).Id;
                     _processManager.KillProcess(_programInMemoryData.JobGovernorId);
+                    _resourceManager.ReleaseProcessResources(jobGovernorPid);
                 }
                 else
                 {
-                    var guid = Guid.NewGuid();
                     _processManager.CreateProcess(
-                        $"{nameof(JobGovernorProc)}_{guid}",
+                        $"{nameof(JobGovernorProc)}_{_programInMemoryData.ProgramName}",
                         new JobGovernorProc(
-                            guid,
+                            _programInMemoryData.ProgramName,
                             _programInMemoryData.MachineCode,
                             _processManager,
                             _resourceManager,
