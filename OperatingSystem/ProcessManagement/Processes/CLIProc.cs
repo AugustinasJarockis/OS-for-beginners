@@ -97,11 +97,11 @@ public class CLIProc : ProcessProgram
             }
             case 5: {
                     //TODO: Implement file start
-                    return 0;
+                    return 1;
                 }
             case 6: {
                     //TODO: Print all processes
-                    return 0;
+                    return 1;
                 }
             case 7: {
                     // TODO: error handling
@@ -109,7 +109,7 @@ public class CLIProc : ProcessProgram
                     ushort pid;
                     ushort.TryParse(_inputTokens[1], out pid);
                     _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
-                    return 0;
+                    return 1;
                 }
             case 8: {
                     // TODO: error handling
@@ -117,49 +117,49 @@ public class CLIProc : ProcessProgram
                     ushort pid;
                     ushort.TryParse(_inputTokens[1], out pid);
                     // TODO: Kill process
-                    return 0;
+                    return 1;
                 }
             case 9: {
                     // TODO: make suspend
-                    return 0;
+                    return 1;
                 }
             case 10: {
                     // TODO: make unsuspend
-                    return 0;
+                    return 1;
                 }
             case 11: {
                     _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData {
                         Name = nameof(OsShutdownData),
                         IsSingleUse = true,
                     });
-                    return 0;
+                    return 1;
                 }
             case 12: {
                     // TODO: make dir
-                    return 0;
+                    return 1;
                 }
             case 13: {
                     // TODO: make create
-                    return 0;
+                    return 1;
                 }
             case 14: {
                     // TODO: make delete
-                    return 0;
+                    return 1;
                 }
             case 15: {
                     // TODO: make write
-                    return 0;
+                    return 1;
                 }
             case 16: {
                     // TODO: make display
-                    return 0;
+                    return 1;
                 }
             case 17: {
                     // TODO: implement error handling
-                    return 0;
+                    return 1;
                 }
             default:
-                return 0;
+                return 1;
         }
     }
 }
