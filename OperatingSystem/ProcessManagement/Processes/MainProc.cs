@@ -40,9 +40,13 @@ public class MainProc : ProcessProgram
             {
                 if (_programInMemoryData.IsEnd)
                 {
-                    var jobGovernorPid = _processManager.FindProcessByName(_programInMemoryData.JobGovernorId).Id;
-                    _processManager.KillProcess(_programInMemoryData.JobGovernorId);
-                    _resourceManager.ReleaseProcessResources(jobGovernorPid);
+                    var killedPids = _processManager.KillProcess(_programInMemoryData.JobGovernorId);
+
+                    foreach (var killedPid in killedPids)
+                    {
+                        _resourceManager.ReleaseProcessResources(killedPid);
+                        _memoryManager.FreeMemory(killedPid);
+                    }
                 }
                 else
                 {

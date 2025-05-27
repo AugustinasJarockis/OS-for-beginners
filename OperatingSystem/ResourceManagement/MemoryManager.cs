@@ -71,10 +71,9 @@ public class MemoryManager
         }
     }
 
-    public void FreeMemory()
+    public void FreeMemory(ushort processId)
     {
-        var currentProcessId = _processManager.CurrentProcessId;
-        if (!_allocatedPagesByPid.TryGetValue(currentProcessId, out var pages))
+        if (!_allocatedPagesByPid.TryGetValue(processId, out var pages))
         {
             return;
         }
@@ -84,9 +83,9 @@ public class MemoryManager
             page.AllocatedToPid = null;
         }
         
-        Log.Information("Freed {PageCount} pages of memory from pid {Pid}", pages.Count, currentProcessId);
+        Log.Information("Freed {PageCount} pages of memory from pid {Pid}", pages.Count, processId);
 
-        _allocatedPagesByPid.Remove(currentProcessId);
+        _allocatedPagesByPid.Remove(processId);
     }
 
     public string GetStringUntilZero(ulong virtualAddress)

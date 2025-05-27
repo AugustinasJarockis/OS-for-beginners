@@ -59,9 +59,14 @@ public class CLIProc : ProcessProgram
                     //TODO: Implement file start
                     return 1;
                 }
-            case 6: {
-                    //TODO: Print all processes
-                    return 1;
+            case 6:
+            {
+                foreach (var process in _processManager.Processes)
+                {
+                    PrintMessage($"Process: {process.Name}; PID: {process.Id}; State: {process.State}");
+                }
+                
+                return 1;
             }
             case 7:
             {
@@ -87,14 +92,37 @@ public class CLIProc : ProcessProgram
                 
                 return 1;
             }
-            case 8: {
-                    // TODO: error handling
-                    // TODO: check if id exists
-                    ushort pid;
-                    ushort.TryParse(_inputTokens[1], out pid);
-                    // TODO: Kill process
+            case 8:
+            {
+                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
+                {
+                    PrintMessage("Expected format: 'kill [PID]'");
                     return 1;
                 }
+
+                if (!_processManager.ProcessExists(pid))
+                {
+                    PrintMessage($"Process not found by pid {pid}");
+                    return 1;
+                }
+
+                if (_processManager.IsSystemProcess(pid))
+                {
+                    PrintMessage("System process cannot be killed");
+                    return 1;
+                }
+
+                var processName = _processManager.FindProcessById(pid).Parent!.Name;
+                _resourceManager.AddResourcePart(ResourceNames.ProgramInMemory, new ProgramInMemoryData
+                {
+                    IsSingleUse = true,
+                    IsEnd = true,
+                    Name = nameof(ProgramInMemoryData),
+                    JobGovernorId = processName
+                });
+                
+                return 1;
+            }
             case 9: {
                     // TODO: make suspend
                     return 1;
