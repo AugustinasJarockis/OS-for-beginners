@@ -1,7 +1,5 @@
 using OperatingSystem.Hardware.Constants;
 using OperatingSystem.ProcessManagement.Processes;
-using OperatingSystem.ResourceManagement.ResourceParts;
-using OperatingSystem.ResourceManagement;
 using OperatingSystem.Utilities;
 using Serilog;
 
@@ -39,6 +37,7 @@ public class ProcessManager
 
         if (isCLI) {
             CLIProcessId = process.Id;
+            Console.WriteLine("CLI id: " + CLIProcessId);
         }
 
         CurrentProcess ??= process;

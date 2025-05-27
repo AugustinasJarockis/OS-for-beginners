@@ -1,6 +1,5 @@
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
-using OperatingSystem.ResourceManagement.Schedulers;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 

@@ -65,6 +65,7 @@ public class KeyboardInputProc : ProcessProgram
                     Text = currentInput,
                     IsSingleUse = true
                 });
+                currentInput = "";
                 return 0;
             }
             case 5: 
@@ -80,6 +81,7 @@ public class KeyboardInputProc : ProcessProgram
                     Text = currentInput,
                     IsSingleUse = true
                 });
+                currentInput = "";
                 return 0;
             }
             default:
