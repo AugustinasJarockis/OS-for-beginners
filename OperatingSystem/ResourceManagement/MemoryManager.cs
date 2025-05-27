@@ -1,3 +1,4 @@
+using System.Text;
 using OperatingSystem.Hardware;
 using OperatingSystem.ProcessManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
@@ -88,14 +89,43 @@ public class MemoryManager
         _allocatedPagesByPid.Remove(currentProcessId);
     }
 
+    public string GetStringUntilZero(ulong virtualAddress)
+    {
+        const int maxStrLength = 1024;
+        var strBuilder = new StringBuilder();
+
+        for (var i = 0; i < maxStrLength; i++)
+        {
+            var physicalAddress = CalculatePhysicalAddress(virtualAddress + (ulong)(i * 4), _processManager.CurrentProcessId);
+            var value = _ram.GetDWord(physicalAddress);
+            var ch1 = (char)((value & 0xFF000000) >> 24);
+            var ch2 = (char)((value & 0x00FF0000) >> 16);
+            var ch3 = (char)((value & 0x0000FF00) >> 8);
+            var ch4 = (char)(value & 0x000000FF);
+
+            if (ch1 == 0)
+                break;
+            strBuilder.Append(ch1);
+
+            if (ch2 == 0)
+                break;
+            strBuilder.Append(ch2);
+            
+            if (ch3 == 0)
+                break;
+            strBuilder.Append(ch3);
+            
+            if (ch4 == 0)
+                break;
+            strBuilder.Append(ch4);
+        }
+        
+        return strBuilder.ToString();
+    }
+    
     public void SetDWord(ulong virtualAddress, uint value)
     {
-        var currentPid = _processManager.CurrentProcessId;
-        var pages = _allocatedPagesByPid[currentPid];
-        var pageIndex = (int)(virtualAddress / PageSize);
-        var page = pages.ElementAt(pageIndex);
-        var physicalAddress = (ulong)page.PageIndex * PageSize + virtualAddress % PageSize;
-        
+        var physicalAddress = CalculatePhysicalAddress(virtualAddress, _processManager.CurrentProcessId);
         _ram.SetDWord(physicalAddress, value);
     }
     
@@ -171,5 +201,15 @@ public class MemoryManager
         var pageTableEntryAddress = GetPageTableAddress(processId) + (ulong)virtualPageIndex * 4 + 4;
         var pageTableEntry = (uint)(page.PageIndex << 1) + 1;
         _ram.SetDWord(pageTableEntryAddress, pageTableEntry);
+    }
+
+    private ulong CalculatePhysicalAddress(ulong virtualAddress, ushort processId)
+    {
+        var currentPid = _processManager.CurrentProcessId;
+        var pages = _allocatedPagesByPid[currentPid];
+        var pageIndex = (int)(virtualAddress / PageSize);
+        var page = pages.ElementAt(pageIndex);
+        var physicalAddress = (ulong)page.PageIndex * PageSize + virtualAddress % PageSize;
+        return physicalAddress;
     }
 }

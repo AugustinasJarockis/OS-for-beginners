@@ -1,7 +1,6 @@
 using OperatingSystem.Hardware;
 using OperatingSystem.Hardware.Constants;
 using OperatingSystem.Hardware.Enums;
-using OperatingSystem.Hardware.Operations;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
 
@@ -9,6 +8,7 @@ namespace OperatingSystem.ProcessManagement.Processes;
 
 public class JobGovernorProc : ProcessProgram
 {
+    private const int DataSizeInBytes = 16384; // 16KB
     private const int StackSizeInBytes = 32768; // 32KB
 
     private readonly string _programName;
@@ -17,6 +17,7 @@ public class JobGovernorProc : ProcessProgram
     private readonly ResourceManager _resourceManager;
     private readonly Processor _processor;
     private readonly MemoryManager _memoryManager;
+    private readonly uint[] _registers = new uint[12];
 
     private ushort _vmPid;
     private string _vmName;
@@ -45,7 +46,7 @@ public class JobGovernorProc : ProcessProgram
             case 0:
             {
                 var programSizeInBytes = _machineCode.Count * 4;
-                _memoryManager.AllocateMemory(programSizeInBytes + StackSizeInBytes);
+                _memoryManager.AllocateMemory(programSizeInBytes + DataSizeInBytes + StackSizeInBytes);
                 
                 return CurrentStep + 1;
             }
@@ -54,14 +55,13 @@ public class JobGovernorProc : ProcessProgram
                 for (var i = 0; i < _machineCode.Count; i++)
                     _memoryManager.SetDWord((ulong) i * 4, _machineCode[i]);
 
-                var registers = new uint[12];
-                registers[(int)Register.SP] = (uint)_machineCode.Count * 4;
-                registers[(int)Register.PTBR] = _memoryManager.GetPageTableAddress(_processManager.CurrentProcessId);
+                _registers[(int)Register.SP] = (uint)_machineCode.Count * 4;
+                _registers[(int)Register.PTBR] = _memoryManager.GetPageTableAddress(_processManager.CurrentProcessId);
                 
                 _vmName = $"{nameof(VMProc)}_{_programName}";
                 _vmPid = _processManager.CreateProcess(
                     _vmName,
-                    new VMProc(_programName, _resourceManager, _processor, registers)
+                    new VMProc(_programName, _resourceManager, _processor, _registers)
                 );
 
                 return CurrentStep + 1;
@@ -93,6 +93,15 @@ public class JobGovernorProc : ProcessProgram
                 
                 if (_interruptData.InterruptCode == InterruptCodes.TerminalOutput)
                 {
+                    var str = _memoryManager.GetStringUntilZero(_registers[(int)Register.R3]);
+                    
+                    _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
+                    {
+                        Name = nameof(TerminalOutputData),
+                        IsSingleUse = true,
+                        ProcessId = _vmPid,
+                        Text = str
+                    });
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.WriteToExternalStorage)
                 {

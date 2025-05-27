@@ -1,10 +1,13 @@
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
+using Serilog;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
 public class TerminalOutputProc : ProcessProgram
 {
+    private static readonly Dictionary<ushort, List<string>> _bufferByPid = new();
+    
     private readonly ResourceManager _resourceManager;
     
     private ushort? _focusedProcessId;
@@ -30,7 +33,16 @@ public class TerminalOutputProc : ProcessProgram
                 
                 if (_focusedProcessId != terminalOutputData.ProcessId)
                 {
-                    // TODO: store in buffer
+                    Log.Information("Pid {Pid} is not focused. Persisting terminal output {Text} to buffer.", terminalOutputData.ProcessId, terminalOutputData.Text);
+                    
+                    if (_bufferByPid.TryGetValue(terminalOutputData.ProcessId, out var buffer))
+                    {
+                        buffer.Add(terminalOutputData.Text);
+                    }
+                    else
+                    {
+                        _bufferByPid[terminalOutputData.ProcessId] = [terminalOutputData.Text];
+                    }
                 }
                 else
                 {
@@ -43,6 +55,20 @@ public class TerminalOutputProc : ProcessProgram
                 return 0;
         }
     }
-    
-    private void OnFocusedProcessChange(string _, ushort? processId) => _focusedProcessId = processId;
+
+    private void OnFocusedProcessChange(string _, ushort? processId)
+    {
+        _focusedProcessId = processId;
+        if (processId.HasValue && _bufferByPid.TryGetValue(processId.Value, out var buffer))
+        {
+            Log.Information("Flushing terminal buffer for pid {Pid}", processId.Value);
+            
+            foreach (var str in buffer)
+            {
+                Console.WriteLine(str);
+            }
+
+            _bufferByPid.Remove(processId.Value);
+        }
+    }
 }
