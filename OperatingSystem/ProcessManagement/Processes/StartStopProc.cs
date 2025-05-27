@@ -87,7 +87,13 @@ public class StartStopProc : ProcessProgram
             }
             case 2:
             {
-                throw new NotImplementedException("OS shutdown not implemented");
+                Log.Information("Starting OS shutdown...");
+                return CurrentStep + 1;
+            }
+            case 3:
+            {
+                Environment.Exit(0);
+                return 3;
             }
             default:
                 return 0;
