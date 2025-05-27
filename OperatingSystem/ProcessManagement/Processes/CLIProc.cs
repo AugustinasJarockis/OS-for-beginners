@@ -15,7 +15,7 @@ public class CLIProc : ProcessProgram
         _processManager = processManager;
         _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, OnFocusedProcessChange);
     }
-    private void OnFocusedProcessChange(string _, ushort? processId) => _focusedProcessId = processId;
+    private void OnFocusedProcessChange(string _, ushort? processId, ushort? _1) => _focusedProcessId = processId;
 
     private ushort? _focusedProcessId;
     private List<string> _inputTokens;

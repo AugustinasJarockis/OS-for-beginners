@@ -112,6 +112,12 @@ public class MemoryManager
         var physicalAddress = CalculatePhysicalAddress(virtualAddress, _processManager.CurrentProcessId);
         _ram.SetDWord(physicalAddress, value);
     }
+
+    public void SetByte(ulong virtualAddress, byte value)
+    {
+        var physicalAddress = CalculatePhysicalAddress(virtualAddress, _processManager.CurrentProcessId);
+        _ram.SetByte(physicalAddress, value);
+    }
     
     public uint GetPageTableAddress(int processId)
     {
