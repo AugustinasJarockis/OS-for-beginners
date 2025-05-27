@@ -6,10 +6,12 @@ namespace OperatingSystem.ProcessManagement.Processes;
 public class CLIProc : ProcessProgram
 {
     private readonly ResourceManager _resourceManager;
+    private readonly ProcessManager _processManager;
     
-    public CLIProc(ResourceManager resourceManager)
+    public CLIProc(ResourceManager resourceManager, ProcessManager processManager)
     {
         _resourceManager = resourceManager;
+        _processManager = processManager;
     }
 
     protected override int Next()
@@ -18,14 +20,25 @@ public class CLIProc : ProcessProgram
         {
             case 0:
             {
-                _resourceManager.RequestResource(ResourceNames.KeyboardInput, nameof(KeyboardInputData));
+                _resourceManager.RequestResource(ResourceNames.Focus, nameof(FocusData));
                 return CurrentStep + 1;
             }
             case 1:
             {
-                var input = _resourceManager.ReadResource<KeyboardInputData>(ResourceNames.KeyboardInput, nameof(KeyboardInputData));
-                Console.WriteLine($"CLI received: {input.PressedKey}");
-                return 0;
+                _resourceManager.RequestResource(ResourceNames.UserInput, nameof(UserInputData));
+                return CurrentStep + 1;
+            }
+            case 2:
+            {
+                var userInput = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData));
+                _resourceManager.AddResourcePart(ResourceNames.TerminalOutput, new TerminalOutputData
+                {
+                    Name = nameof(TerminalOutputData),
+                    IsSingleUse = true,
+                    ProcessId = _processManager.CurrentProcessId,
+                    Text = userInput.Text
+                });
+                return 1;
             }
             default:
                 return 0;
