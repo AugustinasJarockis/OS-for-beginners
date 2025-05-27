@@ -46,7 +46,7 @@ public class TerminalOutputProc : ProcessProgram
                 }
                 else
                 {
-                    Console.WriteLine($"From terminal: {terminalOutputData.Text}");
+                    Console.WriteLine($"[TERMINAL]: {terminalOutputData.Text}");
                 }
                 
                 return 0;
@@ -65,7 +65,7 @@ public class TerminalOutputProc : ProcessProgram
             
             foreach (var str in buffer)
             {
-                Console.WriteLine(str);
+                Console.WriteLine($"[TERMINAL] {str}");
             }
 
             _bufferByPid.Remove(processId.Value);

@@ -49,7 +49,8 @@ var processor = new Processor(ram, OnVMInterrupt);
 
 processManager.CreateProcess(
     nameof(StartStopProc),
-    new StartStopProc(processManager, resourceManager, processor, ram, externalStorage)
+    new StartStopProc(processManager, resourceManager, processor, ram, externalStorage),
+    isSystem: true
 );
 
 processManager.Schedule();
