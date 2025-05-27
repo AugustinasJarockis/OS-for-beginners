@@ -58,7 +58,7 @@ public class StartStopProc : ProcessProgram
                 _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _memoryManager));
                 _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager));
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc());
-                ushort cliId = _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager, _processManager));
+                _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager, _processManager), isCLI: true);
                 _processManager.CreateProcess(nameof(TerminalOutputProc), new TerminalOutputProc(_resourceManager));
                 _processManager.CreateProcess(nameof(KeyboardInputProc), new KeyboardInputProc(_resourceManager));
                 
@@ -67,8 +67,6 @@ public class StartStopProc : ProcessProgram
                     Name = nameof(FocusData),
                     IsSingleUse = false,
                 });
-
-                _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), cliId);
 
                 _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, (_, grantedToPid) =>
                 {
