@@ -128,10 +128,6 @@ public class JobGovernorProc : ProcessProgram
             }
             case 5:
             {
-                _processManager.KillProcess(_vmName);
-                _memoryManager.FreeMemory();
-                _resourceManager.ReleaseProcessResources(_vmPid);
-                
                 _resourceManager.AddResourcePart(
                     ResourceNames.ProgramInMemory,
                     new ProgramInMemoryData

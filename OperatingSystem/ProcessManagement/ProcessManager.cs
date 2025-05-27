@@ -7,23 +7,23 @@ namespace OperatingSystem.ProcessManagement;
 
 public class ProcessManager
 {
-    private readonly List<Process> _processes;
     private readonly ProcessPriorityQueue _processQueue;
     
     public Process CurrentProcess { get; private set; }
     public ushort CurrentProcessId => CurrentProcess.Id;
 
     public static ushort CLIProcessId { get; private set; }
+    public List<Process> Processes { get; }
 
     public ProcessManager()
     {
-        _processes = [];
+        Processes = [];
         _processQueue = new();
     }
     
     public ushort CreateProcess(string processName, ProcessProgram processProgram, bool isCLI = false, bool isSystem = false)
     {
-        if (_processes.Any(x => x.Name == processName))
+        if (Processes.Any(x => x.Name == processName))
         {
             throw new InvalidOperationException($"Process with such name already exists: {processName}");
         }
@@ -43,28 +43,35 @@ public class ProcessManager
 
         CurrentProcess ??= process;
 
-        _processes.Add(process);
+        if (CurrentProcess != process)
+        {
+            CurrentProcess.Children.Add(process);
+        }
+
+        Processes.Add(process);
         
         Log.Information("Created process {ProcessName} with pid {Pid}", processName, process.Id);
         
         return process.Id;
     }
     
-    public void KillProcess(string processName)
+    public List<ushort> KillProcess(string processName)
     {
-        KillProcessRecursively(processName);
+        List<ushort> killedPids = [];
+        KillProcessRecursively(processName, killedPids);
+        return killedPids;
     }
 
     public void SuspendProcess(ushort processId)
     {
-        var process = _processes.First(x => x.Id == processId);
-        process.Suspend();
+        var process = Processes.FirstOrDefault(x => x.Id == processId);
+        process?.Suspend();
     }
     
     public void ActivateProcess(ushort processId)
     {
-        var process = _processes.First(x => x.Id == processId);
-        process.Activate();
+        var process = Processes.FirstOrDefault(x => x.Id == processId);
+        process?.Activate();
     }
     
     public void Schedule()
@@ -74,7 +81,7 @@ public class ProcessManager
             _processQueue.Enqueue(CurrentProcess);
 
             _processQueue.RemoveAllNotReady();
-            foreach (var process in _processes) {
+            foreach (var process in Processes) {
                 if (process.State == ProcessState.Ready
                     && !_processQueue.Contains(process)
                    ) {
@@ -107,38 +114,40 @@ public class ProcessManager
         }
     }
 
-    private void KillProcessRecursively(string processName)
+    private void KillProcessRecursively(string processName, List<ushort> killedPids)
     {
-        var process = FindProcessByName(processName);
+        var process = Processes.First(x => x.Name == processName);
         Log.Information("Killing process {ProcessName} with pid {Pid}", processName, process.Id);
         var childProcessNames = process.Children.Select(x => x.Name).ToList();
         foreach (var childProcessName in childProcessNames)
         {
-            KillProcessRecursively(childProcessName);
+            KillProcessRecursively(childProcessName, killedPids);
         }
 
         process.Parent?.Children.Remove(process);
-        _processes.Remove(process);
+        killedPids.Add(process.Id);
+        _processQueue.Remove(process);
+        Processes.Remove(process);
     }
-    
-    public Process FindProcessByName(string processName)
+
+    public Process FindProcessById(ushort pid)
     {
-        return _processes.First(x => x.Name == processName);
+        return Processes.First(x => x.Id == pid);
     }
 
     public bool ProcessExists(ushort processId)
     {
-        return _processes.Any(x => x.Id == processId);
+        return Processes.Any(x => x.Id == processId);
     }
     
     public bool IsSystemProcess(ushort processId)
     {
-        return _processes.FirstOrDefault(x => x.Id == processId)?.IsSystem ?? false;
+        return Processes.FirstOrDefault(x => x.Id == processId)?.IsSystem ?? false;
     }
     
     private ushort AllocateProcessId()
     {
-        var takenProcessIds = _processes.Select(x => x.Id).ToHashSet();
+        var takenProcessIds = Processes.Select(x => x.Id).ToHashSet();
         
         for (var i = ushort.MinValue; i < ushort.MaxValue; i++)
         {
