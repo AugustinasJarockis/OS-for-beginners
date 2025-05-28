@@ -146,12 +146,25 @@ public class JobGovernorProc : ProcessProgram
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.ReleaseFileHandle) 
                 {
-                    var fileHandle = fileHandles[_registers[(int)Register.R2]].Item2;
-                    fileHandles.Remove(_registers[(int)Register.R2]);
-                    _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
+                    if (fileHandles.ContainsKey(_registers[(int)Register.R2])) {
+                        var fileHandle = fileHandles[_registers[(int)Register.R2]].Item2;
+                        fileHandles.Remove(_registers[(int)Register.R2]);
+                        _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
+                    }
                     return 2;
                 }
-                else if (_interruptData.InterruptCode == InterruptCodes.ReadKeyboardInput) {
+                else if (_interruptData.InterruptCode == InterruptCodes.DeleteFile) 
+                {
+                    if (fileHandles.ContainsKey(_registers[(int)Register.R2])) {
+                        var fileHandle = fileHandles[_registers[(int)Register.R2]].Item2;
+                        FileSystem.DeleteFile(fileHandle);
+                        fileHandles.Remove(_registers[(int)Register.R2]);
+                        _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
+                    }
+                    return 2;
+                }
+                else if (_interruptData.InterruptCode == InterruptCodes.ReadKeyboardInput) 
+                {
                     _resourceManager.RequestResource(ResourceNames.UserInput, nameof(UserInputData));
                     return 7;
                 }

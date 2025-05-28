@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text;
 using OperatingSystem.Hardware;
 using OperatingSystem.Hardware.Constants;
@@ -15,7 +16,7 @@ public static class FileSystem
     private static ProcessManager _processManager;
     private static ResourceManager _resourceManager;
     private static ExternalStorageBlockMetadata[] _blocksMetadata;
-    private static Dictionary<string, List<ExternalStorageBlockMetadata>> _blocksByFileName = new();
+    private static Dictionary<string, (uint, List<ExternalStorageBlockMetadata>)> _blocksByFileName = new();
 
     private static readonly uint[] EmptyBlock = new uint[ExternalStorage.BLOCK_SIZE];
 
@@ -51,7 +52,7 @@ public static class FileSystem
             return null;
         }
 
-        _blocksByFileName.Add(fileName, []);
+        _blocksByFileName.Add(fileName, (0, []));
         var fileHandle = new FileHandleData
         {
             Name = fileName,
@@ -63,10 +64,11 @@ public static class FileSystem
         return fileHandle;
     }
     public static bool DeleteFile(FileHandleData fileHandle) 
-    {
-        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var blocks)) {
+    { 
+        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var fileData)) {
             return false;
         }
+        var blocks = fileData.Item2;
 
         foreach (var block in blocks) {
             _externalStorage.WriteBlock(block.BlockIndex, EmptyBlock);
@@ -79,15 +81,21 @@ public static class FileSystem
         return true;
     }
 
-    public static void OverwriteFile(FileHandleData fileHandle, string[] content)
+    public static void OverwriteFile(FileHandleData fileHandle, string[] content) {
+        var joinedContent = string.Join(Environment.NewLine, content);
+        byte[] byteContent = Encoding.UTF8.GetBytes(joinedContent);
+        OverwriteFile(fileHandle, byteContent);
+    }
+    public static void OverwriteFile(FileHandleData fileHandle, byte[] content)
     {
         var currentProcessId = _processManager.CurrentProcessId;
         Log.Information("Overwriting file {FileName} by pid {Pid}", fileHandle.Name, currentProcessId);
 
         DeleteFile(fileHandle);
-        
+
         // TODO: here should be a call to scheduler, but lets assume that we always have enough external storage :)
-        
+
+        uint fileSize = (uint)content.Length;
         var blocksToWrite = SplitToBlocks(content);
         List<ExternalStorageBlockMetadata> blocksAllocatedToRequester = [];
         for (var i = 0; i < blocksToWrite.Length; i++)
@@ -108,53 +116,71 @@ public static class FileSystem
         {
             var block = blocksAllocatedToRequester[i];
             block.AllocatedToPid = currentProcessId;
-            var data = StringToUIntArray(blocksToWrite[i]);
+            var data = ByteArrayToUIntArray(blocksToWrite[i]);
             _externalStorage.WriteBlock(block.BlockIndex, data);
         }
 
-        _blocksByFileName[fileHandle.Name] = blocksAllocatedToRequester;
+        _blocksByFileName[fileHandle.Name] = (fileSize, blocksAllocatedToRequester);
         
         Log.Information("Allocated {BlockCount} external storage blocks to file {FileName} for pid {Pid}", blocksAllocatedToRequester.Count, fileHandle.Name, currentProcessId);
     }
 
-    public static string[]? ReadFile(FileHandleData fileHandle)
+    public static string[]? ReadFileString(FileHandleData fileHandle, long symbolsToRead = long.MaxValue, long bytesToSkip = 0) {
+        var byteContent = ReadFile(fileHandle, symbolsToRead, bytesToSkip);
+
+        if (byteContent == null)
+            return null;
+
+        string stringContent = Encoding.UTF8.GetString(byteContent, 0, byteContent.Length);
+        string[] stringArray = stringContent.Split('\n');
+        return stringArray;
+    }
+    public static byte[]? ReadFile(FileHandleData fileHandle, long symbolsToRead = long.MaxValue, long bytesToSkip = 0)
     {
         Log.Information("Reading from file {FileName}", fileHandle.Name);
 
-        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var blocksMetadata))
+        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var fileData))
         {
             return null;
         }
-        
-        List<string> content = [];
-        foreach (var blockMetadata in blocksMetadata)
-        {
-            var block = _externalStorage.ReadBlock(blockMetadata.BlockIndex);
-            var strBuilder = new StringBuilder();
-            foreach (var part in block)
-            {
-                var ch1 = (char)((part & 0xFFFF0000) >> 16);
-                var ch2 = (char)(part & 0x0000FFFF);
 
-                if (ch1 == 0)
-                    break;
-                strBuilder.Append(ch1);
+        var fileSize = fileData.Item1;
+        var blocksMetadata = fileData.Item2;
 
-                if (ch2 == 0)
-                    break;
-                strBuilder.Append(ch2);
+        byte[] content = [];
+
+        uint bytesToRead = (uint)Math.Min(fileSize - bytesToSkip, symbolsToRead);
+
+        uint currentBlockNr = (uint)(bytesToSkip / 4096);
+        uint[] blockIndexes = blocksMetadata.Select(m => m.BlockIndex).ToArray();
+        var currentBlock = _externalStorage.ReadBlock(blockIndexes[currentBlockNr]);
+
+        for (int i = (int)bytesToSkip; i < bytesToRead + bytesToSkip; i++) {
+            if (i % 4096 == 0) {
+                currentBlockNr = (uint)(i / 4096);
+                currentBlock = _externalStorage.ReadBlock(blockIndexes[currentBlockNr]);
             }
 
-            content.AddRange(strBuilder.ToString().Split(Environment.NewLine));
+            int shiftAmount = 8 * (3 - (i % 4));
+            var val = (byte)((currentBlock[i / 4] & (0xFF << shiftAmount)) >> shiftAmount);
+
+            byte[] newContent = new byte[content.Length + 1];
+            content.CopyTo(newContent, 0);
+            newContent[newContent.Length - 1] = val;
+            content = newContent;
         }
 
-        return content.ToArray();
+        return content;
     }
 
     private static string[] SplitToBlocks(string[] content)
     {
         var joinedContent = string.Join(Environment.NewLine, content);
         return joinedContent.Chunk(4096 / sizeof(char)).Select(c => new string(c)).ToArray();
+    }
+
+    private static byte[][] SplitToBlocks(byte[] content) {
+        return [.. content.Chunk(4096 / sizeof(byte))];
     }
 
     private static uint[] StringToUIntArray(string str)
@@ -181,5 +207,38 @@ public static class FileSystem
         }
 
         return data.ToArray();
+    }
+
+    private static uint[] ByteArrayToUIntArray(byte[] buffer) {
+        List<uint> data = [];
+        uint part = 0;
+        for (var i = 0; i < buffer.Length; i++) {
+            var val = buffer[i];
+            if (i % 4 == 0) {
+                part |= (uint)val << 24;
+                if (i == buffer.Length - 1) {
+                    data.Add(part);
+                }
+            }
+            else if (i % 4 == 1) {
+                part |= (uint)val << 16;
+                if (i == buffer.Length - 1) {
+                    data.Add(part);
+                }
+            }
+            else if (i % 4 == 2) {
+                part |= (uint)val << 8;
+                if (i == buffer.Length - 1) {
+                    data.Add(part);
+                }
+            }
+            else {
+                part |= (uint)val;
+                data.Add(part);
+                part = 0;
+            }
+        }
+
+        return [.. data];
     }
 }
