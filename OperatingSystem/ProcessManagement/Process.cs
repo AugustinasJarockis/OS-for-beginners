@@ -41,25 +41,42 @@ public class Process
         while (State == ProcessState.Running);
     }
     
+    public void Block()
+    {
+        State = State switch
+        {
+            ProcessState.Ready or ProcessState.Running => ProcessState.Blocked,
+            _ => State
+        };
+    }
+    
+    public void Unblock()
+    {
+        State = State switch
+        {
+            ProcessState.Blocked => ProcessState.Ready,
+            ProcessState.BlockedSuspended => ProcessState.ReadySuspended,
+            _ => State
+        };
+    }
+
     public void Suspend()
     {
         State = State switch
         {
             ProcessState.Ready => ProcessState.ReadySuspended,
             ProcessState.Blocked => ProcessState.BlockedSuspended,
-            ProcessState.Running => ProcessState.Blocked,
-            _ => State
+            _ => State,
         };
     }
-
-    public void Activate()
+    
+    public void Unsuspend()
     {
         State = State switch
         {
             ProcessState.ReadySuspended => ProcessState.Ready,
             ProcessState.BlockedSuspended => ProcessState.Blocked,
-            ProcessState.Blocked => ProcessState.Ready,
-            _ => State
+            _ => State,
         };
     }
 }

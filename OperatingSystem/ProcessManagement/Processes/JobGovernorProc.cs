@@ -119,7 +119,7 @@ public class JobGovernorProc : ProcessProgram
             }
             case 4:
             {
-                _processManager.ActivateProcess(_vmPid);
+                _processManager.UnblockProcess(_vmPid);
                 
                 _resourceManager.AddResourcePart(
                     ResourceNames.FromInterrupt,

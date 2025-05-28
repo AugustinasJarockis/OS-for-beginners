@@ -114,6 +114,12 @@ public class CLIProc : ProcessProgram
                         return 1;
                     }
 
+                    if (_processManager.IsProcessSuspended(pid))
+                    {
+                        PrintMessage("Suspended process cannot be focused");
+                        return 1;
+                    }
+
                     _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), pid);
 
                     return 1;
@@ -207,7 +213,7 @@ public class CLIProc : ProcessProgram
                     return 1;
                 }
 
-                _processManager.ActivateProcess(pid);
+                _processManager.UnsuspendProcess(pid);
 
                 return 1;
                 }

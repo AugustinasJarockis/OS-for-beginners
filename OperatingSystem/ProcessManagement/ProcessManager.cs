@@ -62,16 +62,36 @@ public class ProcessManager
         return killedPids;
     }
 
+    public void BlockProcess(ushort processId)
+    {
+        var process = Processes.FirstOrDefault(x => x.Id == processId);
+        process?.Block();
+    }
+    
+    public void UnblockProcess(ushort processId)
+    {
+        var process = Processes.FirstOrDefault(x => x.Id == processId);
+        process?.Unblock();
+    }
+    
     public void SuspendProcess(ushort processId)
     {
         var process = Processes.FirstOrDefault(x => x.Id == processId);
+        Log.Information("Pid {Pid} suspended", processId);
         process?.Suspend();
     }
     
-    public void ActivateProcess(ushort processId)
+    public void UnsuspendProcess(ushort processId)
     {
         var process = Processes.FirstOrDefault(x => x.Id == processId);
-        process?.Activate();
+        Log.Information("Pid {Pid} unsuspended", processId);
+        process?.Unsuspend();
+    }
+
+    public bool IsProcessSuspended(ushort processId)
+    {
+        var process = Processes.FirstOrDefault(x => x.Id == processId);
+        return process?.State is ProcessState.ReadySuspended or ProcessState.BlockedSuspended;
     }
     
     public void Schedule()

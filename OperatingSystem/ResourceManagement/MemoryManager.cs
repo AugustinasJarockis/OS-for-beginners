@@ -62,12 +62,12 @@ public class MemoryManager
         var pidsGrantedMemory = RunScheduler();
         foreach (var pid in pidsGrantedMemory)
         {
-            _processManager.ActivateProcess(pid);
+            _processManager.UnblockProcess(pid);
         }
 
         if (!pidsGrantedMemory.Contains(currentProcessId))
         {
-            _processManager.SuspendProcess(currentProcessId);
+            _processManager.BlockProcess(currentProcessId);
         }
     }
 
