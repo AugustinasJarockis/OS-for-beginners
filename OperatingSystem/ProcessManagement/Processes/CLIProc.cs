@@ -1,3 +1,4 @@
+using Assembler;
 using OperatingSystem.Hardware.Enums;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.Files;
@@ -37,9 +38,9 @@ public class CLIProc : ProcessProgram
                 }
             case 2: {
                     var input = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData)).Text;
-                    _inputTokens = input.Trim().ToLower().Split(' ').Select(token => token.Trim()).ToList();
+                    _inputTokens = input.Trim().Split(' ').Select(token => token.Trim()).ToList();
 
-                    switch (_inputTokens[0]) {
+                    switch (_inputTokens[0].ToLower()) {
                         case "start": {
                                 return 5;
                                 }
@@ -89,6 +90,13 @@ public class CLIProc : ProcessProgram
                 }
             case 5: {
                     //TODO: Implement file start
+                    if (_inputTokens.Count < 2 || String.IsNullOrEmpty(_inputTokens[1])) {
+                        PrintMessage("Expected format: 'start [file name]'");
+                        return 1;
+                    }
+
+                    LoadProgram(_inputTokens[1]);
+
                     return 1;
                 }
             case 6: {
@@ -266,7 +274,12 @@ public class CLIProc : ProcessProgram
                 }
             case 16: {
                     fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, _inputTokens[1]);
-                    PrintMessage(FileSystem.ReadFile(fileHandle)[0]);
+                    var content = FileSystem.ReadFileString(fileHandle);
+                    if (content != null) {
+                        foreach(var line in content) {
+                            PrintMessage(line);
+                        }
+                    }
                     _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
                     return 1;
                 }
@@ -327,5 +340,36 @@ public class CLIProc : ProcessProgram
             ProcessId = _processManager.CurrentProcessId,
             Text = text,
         });
+    }
+
+    private void LoadProgram(string fileName) {
+        _resourceManager.RequestResource(ResourceNames.FileHandle, fileName);
+        var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
+        var content = FileSystem.ReadFileString(fileHandle);
+        _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
+
+        if (content is null) {
+            PrintMessage($"Failed to read from file {fileName}");
+            return;
+        }
+
+        List<uint> machineCode;
+        try {
+            machineCode = MachineCodeAssembler.ToMachineCode(content);
+        }
+        catch (Exception ex) {
+            PrintMessage($"Program {fileName} code is incorrect: {ex.Message}");
+            return;
+        }
+
+        _resourceManager.AddResourcePart(
+            ResourceNames.ProgramInMemory,
+            new ProgramInMemoryData {
+                Name = nameof(ProgramInMemoryData),
+                ProgramName = fileName + DateTime.Now,
+                MachineCode = machineCode,
+                IsSingleUse = true
+            }
+        );
     }
 }
