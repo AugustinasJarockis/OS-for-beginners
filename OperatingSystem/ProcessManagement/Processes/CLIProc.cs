@@ -349,14 +349,7 @@ public class CLIProc : ProcessProgram
         _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
 
         if (content is null) {
-            _resourceManager.AddResourcePart(
-                ResourceNames.TerminalOutput,
-                new TerminalOutputData {
-                    Name = nameof(TerminalOutputData),
-                    IsSingleUse = true,
-                    Text = $"Failed to read from file {fileName}",
-                    ProcessId = _processManager.CurrentProcessId
-                });
+            PrintMessage($"Failed to read from file {fileName}");
             return;
         }
 
@@ -365,14 +358,7 @@ public class CLIProc : ProcessProgram
             machineCode = MachineCodeAssembler.ToMachineCode(content);
         }
         catch (Exception ex) {
-            _resourceManager.AddResourcePart(
-                ResourceNames.TerminalOutput,
-                new TerminalOutputData {
-                    Name = nameof(TerminalOutputData),
-                    IsSingleUse = true,
-                    Text = $"Program {fileName} code is incorrect: {ex.Message}",
-                    ProcessId = _processManager.CurrentProcessId
-                });
+            PrintMessage($"Program {fileName} code is incorrect: {ex.Message}");
             return;
         }
 
