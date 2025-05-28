@@ -65,7 +65,8 @@ public class MainProc : ProcessProgram
                             _processManager,
                             _resourceManager,
                             _processor,
-                            _memoryManager
+                            _memoryManager,
+                            basePriority: _programInMemoryData.BasePriority
                         ),
                         isSystem: true,
                         basePriority: _programInMemoryData.BasePriority

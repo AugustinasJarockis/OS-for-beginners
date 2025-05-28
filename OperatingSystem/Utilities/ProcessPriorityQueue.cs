@@ -20,7 +20,10 @@ namespace OperatingSystem.Utilities
 
             for (int i = 0; i < queue.Count; i++) {
                 if (queue[i].Priority >= process.Priority || i == queue.Count - 1) {
-                    queue.Insert(i, process);
+                    if (process.Priority > queue[^1].Priority)
+                        queue.Add(process);
+                    else
+                        queue.Insert(i, process);
                     break;
                 }
             }
