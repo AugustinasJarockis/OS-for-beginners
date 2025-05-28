@@ -57,7 +57,7 @@ public class ResourceManager
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)
         {
-            _processManager.ActivateProcess(pid);
+            _processManager.UnblockProcess(pid);
         }
     }
 
@@ -71,7 +71,7 @@ public class ResourceManager
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)
         {
-            _processManager.ActivateProcess(pid);
+            _processManager.UnblockProcess(pid);
         }
     }
 
@@ -83,11 +83,11 @@ public class ResourceManager
         var newOwner = _processManager.FindProcessById(newOwnerPid);
         resource.SetGrantedToPid(part, newOwner.Id, newOwner.Parent?.Id);
         
-        _processManager.ActivateProcess(newOwnerPid);
+        _processManager.UnblockProcess(newOwnerPid);
         
         if (oldOwnerPid.HasValue)
         {
-            _processManager.SuspendProcess(oldOwnerPid.Value);
+            _processManager.BlockProcess(oldOwnerPid.Value);
         }
     }
 
@@ -108,12 +108,12 @@ public class ResourceManager
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)
         {
-            _processManager.ActivateProcess(pid);
+            _processManager.UnblockProcess(pid);
         }
 
         if (!pidsGrantedResource.Contains(processId))
         {
-            _processManager.SuspendProcess(processId);
+            _processManager.BlockProcess(processId);
         }
     }
 
