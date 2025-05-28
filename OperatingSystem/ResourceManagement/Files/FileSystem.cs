@@ -7,19 +7,19 @@ using Serilog;
 
 namespace OperatingSystem.ResourceManagement.Files;
 
-public class FileSystem
+public static class FileSystem
 {
     private const uint BlockCount = SizeConstants.EXTERNAL_STORAGE_SIZE / 4;
     
-    private readonly ExternalStorage _externalStorage;
-    private readonly ProcessManager _processManager;
-    private readonly ResourceManager _resourceManager;
-    private readonly ExternalStorageBlockMetadata[] _blocksMetadata;
-    private readonly Dictionary<string, List<ExternalStorageBlockMetadata>> _blocksByFileName = new();
+    private static ExternalStorage _externalStorage;
+    private static ProcessManager _processManager;
+    private static ResourceManager _resourceManager;
+    private static ExternalStorageBlockMetadata[] _blocksMetadata;
+    private static Dictionary<string, List<ExternalStorageBlockMetadata>> _blocksByFileName = new();
 
     private static readonly uint[] EmptyBlock = new uint[ExternalStorage.BLOCK_SIZE];
 
-    public FileSystem(ExternalStorage externalStorage, ProcessManager processManager, ResourceManager resourceManager)
+    public static void Initialise(ExternalStorage externalStorage, ProcessManager processManager, ResourceManager resourceManager)
     {
         _externalStorage = externalStorage;
         _processManager = processManager;
@@ -35,8 +35,12 @@ public class FileSystem
             };
         }
     }
+
+    public static List<string> GetFileList() {
+        return _blocksByFileName.Keys.ToList();
+    }
     
-    public FileHandleData? CreateFile(string fileName)
+    public static FileHandleData? CreateFile(string fileName)
     {
         if (_blocksByFileName.ContainsKey(fileName))
         {
@@ -54,26 +58,24 @@ public class FileSystem
         Log.Information("File {FileName} created by pid {Pid}", fileName, _processManager.CurrentProcessId);
         return fileHandle;
     }
-    
-    public void DeleteFile(FileHandleData fileHandle)
+    public static bool DeleteFile(FileHandleData fileHandle) 
     {
-        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var blocks))
-        {
-            return;
+        if (!_blocksByFileName.TryGetValue(fileHandle.Name, out var blocks)) {
+            return false;
         }
-        
-        foreach (var block in blocks)
-        {
+
+        foreach (var block in blocks) {
             _externalStorage.WriteBlock(block.BlockIndex, EmptyBlock);
             block.AllocatedToPid = null;
         }
 
         _blocksByFileName.Remove(fileHandle.Name);
-        
+
         Log.Information("File {FileName} deleted by pid {Pid}", fileHandle.Name, fileHandle.GrantedToPid);
+        return true;
     }
 
-    public void OverwriteFile(FileHandleData fileHandle, string[] content)
+    public static void OverwriteFile(FileHandleData fileHandle, string[] content)
     {
         var currentProcessId = _processManager.CurrentProcessId;
         Log.Information("Overwriting file {FileName} by pid {Pid}", fileHandle.Name, currentProcessId);
@@ -111,7 +113,7 @@ public class FileSystem
         Log.Information("Allocated {BlockCount} external storage blocks to file {FileName} for pid {Pid}", blocksAllocatedToRequester.Count, fileHandle.Name, currentProcessId);
     }
 
-    public string[]? ReadFile(FileHandleData fileHandle)
+    public static string[]? ReadFile(FileHandleData fileHandle)
     {
         Log.Information("Reading from file {FileName}", fileHandle.Name);
 

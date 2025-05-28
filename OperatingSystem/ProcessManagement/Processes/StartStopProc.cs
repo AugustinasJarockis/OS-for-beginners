@@ -17,7 +17,6 @@ public class StartStopProc : ProcessProgram
     private readonly ExternalStorage _externalStorage;
 
     private MemoryManager _memoryManager;
-    private FileSystem _fileSystem;
 
     public StartStopProc(
         ProcessManager processManager,
@@ -40,7 +39,7 @@ public class StartStopProc : ProcessProgram
             case 0:
             {
                 _memoryManager = new MemoryManager(_processManager, _ram);
-                _fileSystem = new FileSystem(_externalStorage, _processManager, _resourceManager);
+                FileSystem.Initialise(_externalStorage, _processManager, _resourceManager);
                 
                 _resourceManager.CreateResource(ResourceNames.OsShutdown, [], new OsShutdownScheduler());
                 _resourceManager.CreateResource(ResourceNames.Focus, [], new FocusScheduler());
@@ -116,14 +115,14 @@ public class StartStopProc : ProcessProgram
 
     private void TransferDataFileToExternalStorage(string fileName)
     {
-        _fileSystem.CreateFile(fileName);
+        FileSystem.CreateFile(fileName);
         _resourceManager.RequestResource(ResourceNames.FileHandle, fileName);
         var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
         
         var dataFilePath = Path.Join(Environment.CurrentDirectory, "Data", fileName);
         var lines = File.ReadAllLines(dataFilePath);
-        
-        _fileSystem.OverwriteFile(fileHandle, lines);
+
+        FileSystem.OverwriteFile(fileHandle, lines);
         _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
     }
 
@@ -131,7 +130,7 @@ public class StartStopProc : ProcessProgram
     {
         _resourceManager.RequestResource(ResourceNames.FileHandle, fileName);
         var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
-        var content = _fileSystem.ReadFile(fileHandle);
+        var content = FileSystem.ReadFile(fileHandle);
         _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
         
         if (content is null)
