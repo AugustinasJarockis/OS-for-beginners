@@ -2,7 +2,6 @@ using OperatingSystem.Hardware.Enums;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.Files;
 using OperatingSystem.ResourceManagement.ResourceParts;
-using System.Diagnostics;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -303,7 +302,7 @@ public class CLIProc : ProcessProgram
                 
                 return 1;
             }
-            case 18:
+            case 19:
             {
                 PrintMessage("Unknown command");    
                 return 1;
