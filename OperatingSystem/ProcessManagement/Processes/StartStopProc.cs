@@ -59,7 +59,8 @@ public class StartStopProc : ProcessProgram
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc(), isSystem: true);
                 _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager, _processManager), isCLI: true, isSystem: true);
                 _processManager.CreateProcess(nameof(TerminalOutputProc), new TerminalOutputProc(_resourceManager), isSystem: true);
-                _processManager.CreateProcess(nameof(KeyboardInputProc), new KeyboardInputProc(_resourceManager), isSystem: true);
+                _processManager.CreateProcess(nameof(KeyboardInputProc), new KeyboardInputProc(_ram, _resourceManager), isSystem: true);
+                _processManager.CreateProcess(nameof(UserInputProc), new UserInputProc(_resourceManager), isSystem: true);
                 
                 _resourceManager.AddResourcePart(ResourceNames.Focus, new FocusData
                 {

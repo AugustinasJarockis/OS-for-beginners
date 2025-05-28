@@ -18,23 +18,11 @@ var ram = new RAM();
 var externalStorage = new ExternalStorage();
 
 HardwareDevices.WatchTerminalOutput(ram);
-HardwareDevices.WatchKeyboardInput(ram, () =>
-{
-    var key = (char)ram.GetByte(MemoryLocations.KeyboardInput);
-    ram.SetByte(MemoryLocations.KeyboardInput, 0);
-    resourceManager.AddResourcePart(
-        ResourceNames.KeyboardInput,
-        new KeyboardInputData
-        {
-            PressedKey = key,
-            Name = nameof(KeyboardInputData),
-            IsSingleUse = true,
-        });
-});
+HardwareDevices.WatchKeyboardInput(ram);
 HardwareDevices.WatchWriteToExternalStorage(ram, externalStorage);
 HardwareDevices.WatchReadFromExternalStorage(ram, externalStorage);
 HardwareDevices.TrackTime(ram);
-HardwareDevices.RunPeriodicInterruptTimer(TimeSpan.FromMilliseconds(50), () =>
+HardwareDevices.RunPeriodicInterruptTimer(TimeSpan.FromMilliseconds(10), () =>
 {
     processManager.HandlePeriodicInterrupt();
 });
