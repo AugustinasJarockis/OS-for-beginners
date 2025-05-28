@@ -2,6 +2,7 @@ using OperatingSystem.Hardware;
 using OperatingSystem.Hardware.Constants;
 using OperatingSystem.Hardware.Enums;
 using OperatingSystem.ResourceManagement;
+using OperatingSystem.ResourceManagement.Files;
 using OperatingSystem.ResourceManagement.ResourceParts;
 
 namespace OperatingSystem.ProcessManagement.Processes;
@@ -22,6 +23,11 @@ public class JobGovernorProc : ProcessProgram
     private ushort _vmPid;
     private string _vmName;
     private JobGovernorInterruptData _interruptData;
+
+    private string fileName;
+    private Dictionary<uint, (WriteMode, FileHandleData)> fileHandles;
+    private uint nextFileHandleKey = 1;
+    private WriteMode writeMode = WriteMode.Unknown;
 
     public JobGovernorProc(
         string programName,
@@ -108,9 +114,44 @@ public class JobGovernorProc : ProcessProgram
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.ReadFromExternalStorage)
                 {
+
                 }
-                else if (_interruptData.InterruptCode == InterruptCodes.ReadKeyboardInput)
+                else if (_interruptData.InterruptCode == InterruptCodes.GetFileHandle) 
                 {
+                    fileName = _memoryManager.GetStringUntilZero(_registers[(int)Register.R1]);
+
+                    var r5 = _registers[(int)Register.R5];
+
+                    if (r5 == 1 || r5 == 4) // TODO: potencialus bugas su blogais write modais kai bandoma atidaryti kelis failus
+                        writeMode = WriteMode.Append;
+                    else
+                        writeMode = WriteMode.Begin;
+    
+                    if (FileSystem.FileExists(fileName)) {
+                        if (r5 == 0 || r5 == 1 || r5 == 3 || r5 == 4) {
+                            _resourceManager.RequestResource(ResourceNames.FileHandle, fileName);
+                            return 8;
+                        }
+                    }
+                    else {
+                        if (r5 == 2 || r5 == 3 || r5 == 4) {
+                            var fileHandle = FileSystem.CreateFile(fileName)!;
+                            TrackFileHandle(fileHandle);
+                            return 2;
+                        }
+                    }
+
+                    _registers[(int)Register.R2] = 0;
+                        return 2;
+                }
+                else if (_interruptData.InterruptCode == InterruptCodes.ReleaseFileHandle) 
+                {
+                    var fileHandle = fileHandles[_registers[(int)Register.R2]].Item2;
+                    fileHandles.Remove(_registers[(int)Register.R2]);
+                    _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
+                    return 2;
+                }
+                else if (_interruptData.InterruptCode == InterruptCodes.ReadKeyboardInput) {
                     _resourceManager.RequestResource(ResourceNames.UserInput, nameof(UserInputData));
                     return 7;
                 }
@@ -166,8 +207,22 @@ public class JobGovernorProc : ProcessProgram
                 
                 return 4;
             }
+            case 8: 
+            {
+                var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
+                TrackFileHandle(fileHandle);
+                return 2;
+            }
             default:
                 return 5;
         }
+    }
+
+    private void TrackFileHandle(FileHandleData fileHandle) {
+        fileHandles.Add(nextFileHandleKey, (writeMode, fileHandle));
+        _registers[(int)Register.R2] = nextFileHandleKey;
+        nextFileHandleKey++;
+        if (nextFileHandleKey == 0)
+            nextFileHandleKey++;
     }
 }
