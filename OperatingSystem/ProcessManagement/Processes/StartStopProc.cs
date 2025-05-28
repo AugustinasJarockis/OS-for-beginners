@@ -74,21 +74,13 @@ public class StartStopProc : ProcessProgram
                 });
 
                 TransferDataFileToExternalStorage("halt.txt");
-                LoadProgram("halt.txt");
-                
                 TransferDataFileToExternalStorage("read_input_once.txt");
-                LoadProgram("read_input_once.txt");
-                
                 TransferDataFileToExternalStorage("print_labas.txt");
-                LoadProgram("print_labas.txt");
-                
                 TransferDataFileToExternalStorage("load_store.txt");
-                LoadProgram("load_store.txt");
-                
                 TransferDataFileToExternalStorage("read_input.txt");
-                LoadProgram("read_input.txt");
-
                 TransferDataFileToExternalStorage("write.txt");
+                TransferDataFileToExternalStorage("letter_printer.txt");
+                TransferDataFileToExternalStorage("letter_printer2.txt");
 
                 return CurrentStep + 1;
             }

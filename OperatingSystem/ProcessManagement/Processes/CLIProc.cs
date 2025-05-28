@@ -89,13 +89,17 @@ public class CLIProc : ProcessProgram
                     };
                 }
             case 5: {
-                    //TODO: Implement file start
                     if (_inputTokens.Count < 2 || String.IsNullOrEmpty(_inputTokens[1])) {
                         PrintMessage("Expected format: 'start [file name]'");
                         return 1;
                     }
 
-                    LoadProgram(_inputTokens[1]);
+                    if (_inputTokens.Count > 2 && !String.IsNullOrEmpty(_inputTokens[2]) && byte.TryParse(_inputTokens[2], out byte priority)) {
+                        LoadProgram(_inputTokens[1], basePriority: priority);
+                    }
+                    else {
+                        LoadProgram(_inputTokens[1]);
+                    }
 
                     return 1;
                 }
@@ -342,7 +346,7 @@ public class CLIProc : ProcessProgram
         });
     }
 
-    private void LoadProgram(string fileName) {
+    private void LoadProgram(string fileName, byte basePriority = 0) {
         _resourceManager.RequestResource(ResourceNames.FileHandle, fileName);
         var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
         var content = FileSystem.ReadFileString(fileHandle);
@@ -368,7 +372,8 @@ public class CLIProc : ProcessProgram
                 Name = nameof(ProgramInMemoryData),
                 ProgramName = fileName + DateTime.Now,
                 MachineCode = machineCode,
-                IsSingleUse = true
+                IsSingleUse = true,
+                BasePriority = basePriority
             }
         );
     }

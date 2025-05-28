@@ -33,7 +33,7 @@ public class TerminalOutputProc : ProcessProgram
                 
                 if (_focusedProcessId != terminalOutputData.ProcessId)
                 {
-                    Log.Information("Pid {Pid} is not focused. Persisting terminal output {Text} to buffer.", terminalOutputData.ProcessId, terminalOutputData.Text);
+                    Log.Debug("Pid {Pid} is not focused. Persisting terminal output {Text} to buffer.", terminalOutputData.ProcessId, terminalOutputData.Text);
                     
                     if (_bufferByPid.TryGetValue(terminalOutputData.ProcessId, out var buffer))
                     {
