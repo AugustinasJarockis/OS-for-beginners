@@ -20,6 +20,8 @@ public class JobGovernorProc : ProcessProgram
     private readonly MemoryManager _memoryManager;
     private readonly uint[] _registers = new uint[12];
 
+    private readonly byte _basePriority = 0;
+
     private ushort _vmPid;
     private string _vmName;
     private JobGovernorInterruptData _interruptData;
@@ -35,7 +37,8 @@ public class JobGovernorProc : ProcessProgram
         ProcessManager processManager,
         ResourceManager resourceManager,
         Processor processor,
-        MemoryManager memoryManager)
+        MemoryManager memoryManager,
+        byte basePriority = 0)
     {
         _programName = programName;
         _machineCode = machineCode;
@@ -43,6 +46,7 @@ public class JobGovernorProc : ProcessProgram
         _resourceManager = resourceManager;
         _processor = processor;
         _memoryManager = memoryManager;
+        _basePriority = basePriority;
     }
 
     protected override int Next()
@@ -67,7 +71,8 @@ public class JobGovernorProc : ProcessProgram
                 _vmName = $"{nameof(VMProc)}_{_programName}";
                 _vmPid = _processManager.CreateProcess(
                     _vmName,
-                    new VMProc(_programName, _resourceManager, _processor, _registers)
+                    new VMProc(_programName, _resourceManager, _processor, _registers),
+                    basePriority: _basePriority
                 );
 
                 return CurrentStep + 1;
