@@ -13,7 +13,7 @@ public class KeyboardInputProc : ProcessProgram
         _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, OnFocusedProcessChange);
     }
 
-    private void OnFocusedProcessChange(string _, ushort? processId) => _focusedProcessId = processId;
+    private void OnFocusedProcessChange(string _, ushort? processId, ushort? _1) => _focusedProcessId = processId;
 
     private ushort? _focusedProcessId;
     private string currentInput = "";

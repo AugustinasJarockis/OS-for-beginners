@@ -109,6 +109,11 @@ public class JobGovernorProc : ProcessProgram
                 else if (_interruptData.InterruptCode == InterruptCodes.ReadFromExternalStorage)
                 {
                 }
+                else if (_interruptData.InterruptCode == InterruptCodes.ReadKeyboardInput)
+                {
+                    _resourceManager.RequestResource(ResourceNames.UserInput, nameof(UserInputData));
+                    return 7;
+                }
 
                 return CurrentStep + 1;
             }
@@ -145,6 +150,21 @@ public class JobGovernorProc : ProcessProgram
             case 6:
             {
                 return 6;
+            }
+            case 7:
+            {
+                var userInput = _resourceManager.ReadResource<UserInputData>(ResourceNames.UserInput, nameof(UserInputData));
+                var address = _registers[(int)Register.R3];
+                foreach (var ch in userInput.Text)
+                {
+                    if (ch == '\n')
+                        break;
+
+                    var value = (byte)ch;
+                    _memoryManager.SetByte(address++, value);
+                }
+                
+                return 4;
             }
             default:
                 return 5;

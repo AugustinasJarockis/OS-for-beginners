@@ -67,16 +67,25 @@ public class StartStopProc : ProcessProgram
                     IsSingleUse = false,
                 });
 
-                _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, (_, grantedToPid) =>
+                _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, (_, grantedToPid, _) =>
                 {
                     Log.Information("Focused pid {Pid}", grantedToPid);
                 });
 
-                TransferDataFileToExternalStorage("test.txt");
-                LoadProgram("test.txt");
+                TransferDataFileToExternalStorage("halt.txt");
+                LoadProgram("halt.txt");
                 
-                TransferDataFileToExternalStorage("test2.txt");
-                LoadProgram("test2.txt");
+                TransferDataFileToExternalStorage("read_input_once.txt");
+                LoadProgram("read_input_once.txt");
+                
+                TransferDataFileToExternalStorage("print_labas.txt");
+                LoadProgram("print_labas.txt");
+                
+                TransferDataFileToExternalStorage("load_store.txt");
+                LoadProgram("load_store.txt");
+                
+                TransferDataFileToExternalStorage("read_input.txt");
+                LoadProgram("read_input.txt");
 
                 return CurrentStep + 1;
             }

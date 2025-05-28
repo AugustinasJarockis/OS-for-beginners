@@ -41,7 +41,7 @@ public class ResourceManager
         }
     }
     
-    public void SubscribeGrantedToPidChange<TPart>(string resourceName, Action<string, ushort?> callback) where TPart : ResourcePart
+    public void SubscribeGrantedToPidChange<TPart>(string resourceName, Action<string, ushort?, ushort?> callback) where TPart : ResourcePart
     {
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         resource.OnGrantedToPidChange.Add(callback);
@@ -66,7 +66,7 @@ public class ResourceManager
         Log.Debug("Releasing resource {Resource} part {Part}", resourceName, part.Name);
 
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
-        resource.SetGrantedToPid(part, null);
+        resource.SetGrantedToPid(part, null, null);
         
         var pidsGrantedResource = resource.RunScheduler();
         foreach (var pid in pidsGrantedResource)
@@ -80,7 +80,8 @@ public class ResourceManager
         var resource = (Resource<TPart>)_resources.First(x => x.Name == resourceName);
         var part = resource.Parts.First(p => p.Name == partName);
         var oldOwnerPid = part.GrantedToPid;
-        resource.SetGrantedToPid(part, newOwnerPid);
+        var newOwner = _processManager.FindProcessById(newOwnerPid);
+        resource.SetGrantedToPid(part, newOwner.Id, newOwner.Parent?.Id);
         
         _processManager.ActivateProcess(newOwnerPid);
         
@@ -93,13 +94,14 @@ public class ResourceManager
     public void RequestResource(string resourceName, string partName)
     {
         var resource = _resources.First(x => x.Name == resourceName);
-        var currentProcessId = _processManager.CurrentProcessId;
+        var processId = _processManager.CurrentProcessId;
 
         Log.Debug("Resource {Resource} part {Part} requested by {ProcessName}", resourceName, partName, _processManager.CurrentProcess.Name);
         
         resource.Requesters.Add(new ResourceRequester
         {
-            ProcessId = currentProcessId,
+            ProcessId = processId,
+            ProcessParentPid = _processManager.CurrentProcess.Parent?.Id,
             PartName = partName
         });
 
@@ -109,9 +111,9 @@ public class ResourceManager
             _processManager.ActivateProcess(pid);
         }
 
-        if (!pidsGrantedResource.Contains(currentProcessId))
+        if (!pidsGrantedResource.Contains(processId))
         {
-            _processManager.SuspendProcess(currentProcessId);
+            _processManager.SuspendProcess(processId);
         }
     }
 

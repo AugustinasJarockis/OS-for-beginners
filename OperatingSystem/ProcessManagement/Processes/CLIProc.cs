@@ -1,6 +1,8 @@
+using OperatingSystem.Hardware.Enums;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.Files;
 using OperatingSystem.ResourceManagement.ResourceParts;
+using System.Diagnostics;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -15,7 +17,7 @@ public class CLIProc : ProcessProgram
         _processManager = processManager;
         _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, OnFocusedProcessChange);
     }
-    private void OnFocusedProcessChange(string _, ushort? processId) => _focusedProcessId = processId;
+    private void OnFocusedProcessChange(string _, ushort? processId, ushort? _1) => _focusedProcessId = processId;
 
     private ushort? _focusedProcessId;
     private List<string> _inputTokens;
@@ -24,7 +26,8 @@ public class CLIProc : ProcessProgram
 
     protected override int Next()
     {
-        switch (CurrentStep) {
+        switch (CurrentStep) 
+        {
             case 0: {
                     _resourceManager.RequestResource(ResourceNames.Focus, nameof(FocusData));
                     return CurrentStep + 1;
@@ -77,8 +80,11 @@ public class CLIProc : ProcessProgram
                             returnCase = 16;
                             return 17;
                         }
-                        default: {
+                        case "registers": {
                             return 18;
+                        }
+                        default: {
+                            return 19;
                         }
                     };
                 }
@@ -140,12 +146,71 @@ public class CLIProc : ProcessProgram
                     return 1;
                 }
             case 9: {
-                    // TODO: make suspend
+
+                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
+                {
+                    PrintMessage("Expected format: 'suspend [PID]'");
                     return 1;
                 }
-            case 10: {
-                    // TODO: make unsuspend
+                
+
+                if (!_processManager.ProcessExists(pid))
+                {
+                    PrintMessage($"Process not found by pid {pid}");
+
                     return 1;
+                }
+
+
+                if (_processManager.IsSystemProcess(pid))
+                {
+                    PrintMessage("System process cannot be suspended");
+                    return 1;
+                }
+
+                var process = _processManager.FindProcessById(pid);
+
+                if (process.State != ProcessState.Ready && process.State != ProcessState.Blocked)
+                {
+                    PrintMessage($"Process {pid} is not in a suspendable state (must be READY or BLOCKED)");
+                    return 1;
+                }
+
+                _processManager.SuspendProcess(pid);
+
+                return 1;
+                }
+            case 10: {
+
+                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
+                {
+                    PrintMessage("Expected format: 'unsuspend [PID]'");
+                    return 1;
+                }
+
+                if (!_processManager.ProcessExists(pid))
+                {
+                    PrintMessage($"Process not found by pid {pid}");
+                    return 1;
+                }
+                
+                if (_processManager.IsSystemProcess(pid))
+                {
+                    PrintMessage("System process cannot be unsuspended");
+                    return 1;
+                }
+
+                var process = _processManager.FindProcessById(pid);
+
+                if (process.State != ProcessState.ReadySuspended && process.State != ProcessState.BlockedSuspended)
+                {
+                    PrintMessage($"Process {pid} is not in a suspended state (must be READYS or BLOCKEDS)");
+                    return 1;
+                }
+
+                _processManager.ActivateProcess(pid);
+
+                return 1;
                 }
             case 11: {
                     _resourceManager.AddResourcePart(ResourceNames.OsShutdown, new OsShutdownData {
@@ -209,6 +274,35 @@ public class CLIProc : ProcessProgram
                     _resourceManager.RequestResource(ResourceNames.FileHandle, _inputTokens[1]);
                     return returnCase;
                 }
+            case 18:
+            {
+                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
+                {
+                    PrintMessage("Expected format: 'registers [PID]'");
+                    return 1;
+                }
+
+                if (!_processManager.ProcessExists(pid))
+                {
+                    PrintMessage($"Process not found by pid {pid}");
+                    return 1;
+                }
+
+                var process = _processManager.Processes.FirstOrDefault(x => x.Id == pid);
+                if (process?.Program is not VMProc vmProc)
+                {
+                    PrintMessage("Only can view registers of user process");
+                    return 1;
+                }
+
+                PrintMessage($"Process {process.Name} registers:");
+                for (var i = 0; i < 12; i++)
+                {
+                    PrintMessage($"{Enum.GetName(typeof(Register), i)}: {vmProc.Registers[i]}");
+                }
+                
+                return 1;
+            }
             case 18:
             {
                 PrintMessage("Unknown command");    
