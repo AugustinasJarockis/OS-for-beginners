@@ -1,11 +1,14 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using OperatingSystem.Hardware.Constants;
 
 namespace OperatingSystem.Hardware;
 
 public static class HardwareDevices
 {
+    public static object KeyboardInputLock = new();
+    
+    private static Stack<char> _keyboardInput = new();
+    
     public static void WatchTerminalOutput(RAM ram)
     {
         new Thread(() =>
@@ -22,15 +25,25 @@ public static class HardwareDevices
         }).Start();
     }
 
-    public static void WatchKeyboardInput(RAM ram, Action onInput)
+    public static void WatchKeyboardInput(RAM ram)
     {
         new Thread(() =>
         {
             while (true)
             {
-                var key = Console.ReadKey();
-                ram.SetByte(MemoryLocations.KeyboardInput, (byte)key.KeyChar);
-                onInput();
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey();
+                    _keyboardInput.Push(key.KeyChar);
+                }
+
+                if (_keyboardInput.TryPop(out var keyChar))
+                {
+                    lock (KeyboardInputLock)
+                    {
+                        ram.SetByte(MemoryLocations.KeyboardInput, (byte)keyChar);
+                    }
+                }
             }
         }).Start();
     }
