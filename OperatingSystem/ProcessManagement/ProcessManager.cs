@@ -21,7 +21,7 @@ public class ProcessManager
         _processQueue = new();
     }
     
-    public ushort CreateProcess(string processName, ProcessProgram processProgram, bool isCLI = false, bool isSystem = false)
+    public ushort CreateProcess(string processName, ProcessProgram processProgram, bool isCLI = false, bool isSystem = false, byte basePriority = 0)
     {
         if (Processes.Any(x => x.Name == processName))
         {
@@ -33,7 +33,8 @@ public class ProcessManager
             name: processName,
             program: processProgram,
             parent: CurrentProcess,
-            isSystem: isSystem
+            isSystem: isSystem,
+            basePriority: basePriority
         );
 
         if (isCLI) {

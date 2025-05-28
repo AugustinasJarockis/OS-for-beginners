@@ -16,7 +16,7 @@ public class Process
     {
     }
 
-    public static Process Create(ushort id, string name, ProcessProgram program, Process? parent, bool isSystem = false)
+    public static Process Create(ushort id, string name, ProcessProgram program, Process? parent, bool isSystem = false, byte basePriority = 0)
     {
         return new Process
         {
@@ -24,7 +24,7 @@ public class Process
             Name = name,
             Children = [],
             Parent = parent,
-            BasePriority = 0, // TODO: maybe set different base priority for different processes
+            BasePriority = basePriority,
             Priority = 0,
             State = ProcessState.Ready,
             Program = program,

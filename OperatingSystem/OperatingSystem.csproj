@@ -33,6 +33,12 @@
 	<None Update="Data\write.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+	<None Update="Data\letter_printer.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+	<None Update="Data\letter_printer2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
