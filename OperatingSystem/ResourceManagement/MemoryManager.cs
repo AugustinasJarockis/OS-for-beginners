@@ -106,7 +106,23 @@ public class MemoryManager
         
         return strBuilder.ToString();
     }
-    
+
+    public void DumpData(ulong virtualAddress, byte[] data) {
+        for (var i = 0; i < data.Length; i++) {
+            var physicalAddress = CalculatePhysicalAddress(virtualAddress + (ulong)i, _processManager.CurrentProcessId);
+            _ram.SetByte(physicalAddress, data[i]);
+        }
+    }
+
+    public byte[] GetData(ulong virtualAddress, uint count) {
+        byte[] data = new byte[count];
+        for (var i = 0; i < count; i++) {
+            var physicalAddress = CalculatePhysicalAddress(virtualAddress + (ulong)i, _processManager.CurrentProcessId);
+            data[i] = _ram.GetByte(physicalAddress);
+        }
+        return data;
+    }
+
     public void SetDWord(ulong virtualAddress, uint value)
     {
         var physicalAddress = CalculatePhysicalAddress(virtualAddress, _processManager.CurrentProcessId);

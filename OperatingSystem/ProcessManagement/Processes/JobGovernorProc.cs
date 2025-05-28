@@ -111,10 +111,32 @@ public class JobGovernorProc : ProcessProgram
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.WriteToExternalStorage)
                 {
+                    if (fileHandles.ContainsKey(_registers[(int)Register.R2])) {
+                        var fileHandle = fileHandles[_registers[(int)Register.R2]].Item2;
+                        byte[] data = _memoryManager.GetData(_registers[(int)Register.R3], _registers[(int)Register.R4]);
+                    }
+
+                    _registers[(int)Register.R2] = 0;
+                    _registers[(int)Register.R4] = 0;
+                    return 2;
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.ReadFromExternalStorage)
                 {
+                    if (fileHandles.ContainsKey(_registers[(int)Register.R2])) {
+                        var fileHandle = fileHandles[_registers[(int)Register.R2]].Item2;
+                        byte[]? data = FileSystem.ReadFile(fileHandle, symbolsToRead: _registers[(int)Register.R4], bytesToSkip: _registers[(int)Register.R5]);
+                        if (data == null) {
+                            _registers[(int)Register.R2] = 0;
+                            _registers[(int)Register.R4] = 0;
+                            return 2;
+                        }
+                        _memoryManager.DumpData(_registers[(int)Register.R3], data);
+                        return 2;
+                    }
 
+                    _registers[(int)Register.R2] = 0;
+                    _registers[(int)Register.R4] = 0;
+                    return 2;
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.GetFileHandle) 
                 {

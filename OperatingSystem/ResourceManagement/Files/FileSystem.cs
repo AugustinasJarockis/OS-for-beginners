@@ -147,9 +147,9 @@ public static class FileSystem
         var fileSize = fileData.Item1;
         var blocksMetadata = fileData.Item2;
 
-        byte[] content = [];
-
         uint bytesToRead = (uint)Math.Min(fileSize - bytesToSkip, symbolsToRead);
+        byte[] content = new byte[bytesToRead];
+
 
         uint currentBlockNr = (uint)(bytesToSkip / 4096);
         uint[] blockIndexes = blocksMetadata.Select(m => m.BlockIndex).ToArray();
@@ -164,10 +164,7 @@ public static class FileSystem
             int shiftAmount = 8 * (3 - (i % 4));
             var val = (byte)((currentBlock[i / 4] & (0xFF << shiftAmount)) >> shiftAmount);
 
-            byte[] newContent = new byte[content.Length + 1];
-            content.CopyTo(newContent, 0);
-            newContent[newContent.Length - 1] = val;
-            content = newContent;
+            content[i - bytesToSkip] = val;
         }
 
         return content;

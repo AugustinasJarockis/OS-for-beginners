@@ -268,7 +268,7 @@ public class CLIProc : ProcessProgram
                 }
             case 15: {
                     fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, _inputTokens[1]);
-                    FileSystem.OverwriteFile(fileHandle, [_inputTokens[2]]);
+                    FileSystem.OverwriteFile(fileHandle, _inputTokens.Skip(2).ToArray());
                     _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
                     return 1;
                 }
