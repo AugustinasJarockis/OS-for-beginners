@@ -94,6 +94,11 @@ public class CLIProc : ProcessProgram
                         return 1;
                     }
 
+                    if (!FileSystem.FileExists(_inputTokens[1])) {
+                        PrintMessage($"File not found: {_inputTokens[1]}");
+                        return 1;
+                    }
+
                     if (_inputTokens.Count > 2 && !String.IsNullOrEmpty(_inputTokens[2]) && byte.TryParse(_inputTokens[2], out byte priority)) {
                         LoadProgram(_inputTokens[1], basePriority: priority);
                     }
