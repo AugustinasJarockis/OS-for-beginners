@@ -97,6 +97,17 @@ public class StartStopProc : ProcessProgram
             case 2:
             {
                 Log.Information("Starting OS shutdown...");
+
+                _processManager.KillProcess(nameof(UserInputProc));
+                _processManager.KillProcess(nameof(KeyboardInputProc));
+                _processManager.KillProcess(nameof(TerminalOutputProc));
+                _processManager.KillProcess(nameof(CLIProc));
+                _processManager.KillProcess(nameof(IdleProc));
+                _processManager.KillProcess(nameof(InterruptProc));
+                _processManager.KillProcess(nameof(MainProc));
+
+                _resourceManager.DestroyAllResources();
+                
                 return CurrentStep + 1;
             }
             case 3:

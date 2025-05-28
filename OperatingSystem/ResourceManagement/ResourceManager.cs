@@ -31,6 +31,11 @@ public class ResourceManager
         _resources.Add(resource);
     }
 
+    public void DestroyAllResources() {
+        _resources.Clear();
+        Log.Information("All resources destroyed");
+    }
+
     public void ReleaseProcessResources(ushort processId)
     {
         Log.Information("Releasing pid {Pid} resources", processId);
