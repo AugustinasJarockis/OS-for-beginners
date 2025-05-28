@@ -36,6 +36,10 @@ public static class FileSystem
         }
     }
 
+    public static bool FileExists(string fileName) {
+        return _blocksByFileName.ContainsKey(fileName);
+    }
+
     public static List<string> GetFileList() {
         return _blocksByFileName.Keys.ToList();
     }
