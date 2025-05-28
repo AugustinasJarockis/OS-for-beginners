@@ -1,6 +1,7 @@
 using OperatingSystem.Hardware.Enums;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
+using System.Diagnostics;
 
 namespace OperatingSystem.ProcessManagement.Processes;
 
@@ -126,12 +127,71 @@ public class CLIProc : ProcessProgram
                 return 1;
             }
             case 9: {
-                    // TODO: make suspend
+
+                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
+                {
+                    PrintMessage("Expected format: 'suspend [PID]'");
                     return 1;
                 }
-            case 10: {
-                    // TODO: make unsuspend
+                
+
+                if (!_processManager.ProcessExists(pid))
+                {
+                    PrintMessage($"Process not found by pid {pid}");
+
                     return 1;
+                }
+
+
+                if (_processManager.IsSystemProcess(pid))
+                {
+                    PrintMessage("System process cannot be suspended");
+                    return 1;
+                }
+
+                var process = _processManager.FindProcessById(pid);
+
+                if (process.State != ProcessState.Ready && process.State != ProcessState.Blocked)
+                {
+                    PrintMessage($"Process {pid} is not in a suspendable state (must be READY or BLOCKED)");
+                    return 1;
+                }
+
+                _processManager.SuspendProcess(pid);
+
+                return 1;
+                }
+            case 10: {
+
+                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
+                {
+                    PrintMessage("Expected format: 'unsuspend [PID]'");
+                    return 1;
+                }
+
+                if (!_processManager.ProcessExists(pid))
+                {
+                    PrintMessage($"Process not found by pid {pid}");
+                    return 1;
+                }
+
+                if (_processManager.IsSystemProcess(pid))
+                {
+                    PrintMessage("System process cannot be unsuspended");
+                    return 1;
+                }
+
+                var process = _processManager.FindProcessById(pid);
+
+                if (process.State != ProcessState.ReadySuspended && process.State != ProcessState.BlockedSuspended)
+                {
+                    PrintMessage($"Process {pid} is not in a suspended state (must be READYS or BLOCKEDS)");
+                    return 1;
+                }
+
+                _processManager.ActivateProcess(pid);
+
+                return 1;
                 }
             case 11:
             {
