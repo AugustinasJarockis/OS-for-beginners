@@ -55,12 +55,12 @@ public class StartStopProc : ProcessProgram
                 _resourceManager.CreateResource(ResourceNames.Focus, [], new FocusScheduler());
                 
                 _processManager.CreateProcess(nameof(MainProc), new MainProc(_processManager, _resourceManager, _processor, _memoryManager), isSystem: true);
-                _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager), isSystem: true, basePriority: 128);
+                _processManager.CreateProcess(nameof(InterruptProc), new InterruptProc(_resourceManager), isSystem: true, basePriority: 32);
                 _processManager.CreateProcess(nameof(IdleProc), new IdleProc(), isSystem: true);
-                _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager, _processManager), isCLI: true, isSystem: true, 128);
-                _processManager.CreateProcess(nameof(TerminalOutputProc), new TerminalOutputProc(_resourceManager), isSystem: true, basePriority: 200);
-                _processManager.CreateProcess(nameof(KeyboardInputProc), new KeyboardInputProc(_ram, _resourceManager), isSystem: true, basePriority: 128);
-                _processManager.CreateProcess(nameof(UserInputProc), new UserInputProc(_resourceManager), isSystem: true, basePriority: 128);
+                _processManager.CreateProcess(nameof(CLIProc), new CLIProc(_resourceManager, _processManager), isCLI: true, isSystem: true, 32);
+                _processManager.CreateProcess(nameof(TerminalOutputProc), new TerminalOutputProc(_resourceManager), isSystem: true, basePriority: 64);
+                _processManager.CreateProcess(nameof(KeyboardInputProc), new KeyboardInputProc(_ram, _resourceManager), isSystem: true, basePriority: 32);
+                _processManager.CreateProcess(nameof(UserInputProc), new UserInputProc(_resourceManager), isSystem: true, basePriority: 32);
                 
                 _resourceManager.AddResourcePart(ResourceNames.Focus, new FocusData
                 {
