@@ -11,4 +11,5 @@ public static class InterruptCodes
     public const byte WriteToExternalStorage = 6;
     public const byte ReadFromExternalStorage = 7;
     public const byte Halt = 13;
+    public const byte ReadKeyboardInput = 14;
 }

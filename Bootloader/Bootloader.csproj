@@ -88,9 +88,6 @@
 	  <None Update="Data\VmHaltTest.txt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-	  <None Update="Data\VmLoadStoreTest.txt">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
 	  <None Update="Data\VmPageFaultTest.txt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>

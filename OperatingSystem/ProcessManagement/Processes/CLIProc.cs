@@ -1,3 +1,4 @@
+using OperatingSystem.Hardware.Enums;
 using OperatingSystem.ResourceManagement;
 using OperatingSystem.ResourceManagement.ResourceParts;
 
@@ -14,7 +15,7 @@ public class CLIProc : ProcessProgram
         _processManager = processManager;
         _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, OnFocusedProcessChange);
     }
-    private void OnFocusedProcessChange(string _, ushort? processId) => _focusedProcessId = processId;
+    private void OnFocusedProcessChange(string _, ushort? processId, ushort? _1) => _focusedProcessId = processId;
 
     private ushort? _focusedProcessId;
     private List<string> _inputTokens;
@@ -52,7 +53,8 @@ public class CLIProc : ProcessProgram
                     "delete" => 14,
                     "write" => 15,
                     "display" => 16,
-                    _ => 17
+                    "registers" => 17,
+                    _ => 18
                 };
             }
             case 5: {
@@ -160,6 +162,35 @@ public class CLIProc : ProcessProgram
                     return 1;
                 }
             case 17:
+            {
+                if (_inputTokens.Count != 2 || !ushort.TryParse(_inputTokens[1], out var pid))
+                {
+                    PrintMessage("Expected format: 'registers [PID]'");
+                    return 1;
+                }
+
+                if (!_processManager.ProcessExists(pid))
+                {
+                    PrintMessage($"Process not found by pid {pid}");
+                    return 1;
+                }
+
+                var process = _processManager.Processes.FirstOrDefault(x => x.Id == pid);
+                if (process?.Program is not VMProc vmProc)
+                {
+                    PrintMessage("Only can view registers of user process");
+                    return 1;
+                }
+
+                PrintMessage($"Process {process.Name} registers:");
+                for (var i = 0; i < 12; i++)
+                {
+                    PrintMessage($"{Enum.GetName(typeof(Register), i)}: {vmProc.Registers[i]}");
+                }
+                
+                return 1;
+            }
+            case 18:
             {
                 PrintMessage("Unknown command");    
                 return 1;

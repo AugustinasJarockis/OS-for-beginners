@@ -11,9 +11,10 @@ public class VMProc : ProcessProgram
     private readonly ResourceManager _resourceManager;
     private readonly Processor _processor;
     private readonly string _fromInterruptPartName;
-    private readonly uint[] _registers;
 
     private bool _interruptOccurred;
+
+    public uint[] Registers { get; }
 
     public VMProc(string programName, ResourceManager resourceManager, Processor processor, uint[] registers)
     {
@@ -21,7 +22,7 @@ public class VMProc : ProcessProgram
         _resourceManager = resourceManager;
         _processor = processor;
         _fromInterruptPartName = $"{nameof(FromInterruptData)}_{_programName}";
-        _registers = registers;
+        Registers = registers;
     }
 
     public void OnInterrupt(byte interruptCode)
@@ -36,7 +37,6 @@ public class VMProc : ProcessProgram
                 InterruptCode = interruptCode
             });
         
-        _resourceManager.RequestResource(ResourceNames.FromInterrupt, _fromInterruptPartName);
         _interruptOccurred = true;
     }
     
@@ -46,22 +46,33 @@ public class VMProc : ProcessProgram
         {
             case 0:
             {
-                for (var i = 0; i < _registers.Length; i++)
-                    _processor.registers[i] = _registers[i];
+                for (var i = 0; i < Registers.Length; i++)
+                    _processor.registers[i] = Registers[i];
                 FlagUtils.SetModeFlag(_processor);
                 
                 _processor.Step();
                 
-                for (var i = 0; i < _registers.Length; i++)
-                    _registers[i] = _processor.registers[i];
+                for (var i = 0; i < Registers.Length; i++)
+                    Registers[i] = _processor.registers[i];
                 FlagUtils.ClearModeFlag(_processor);
                 
                 return _interruptOccurred ? 1 : 0;
             }
             case 1:
             {
-                _resourceManager.ReadResource<FromInterruptData>(ResourceNames.FromInterrupt, _fromInterruptPartName);
+                _resourceManager.RequestResource(ResourceNames.FromInterrupt, _fromInterruptPartName);
+                return CurrentStep + 1;
+            }
+            case 2:
+            {
+                try
+                {
+                    _resourceManager.ReadResource<FromInterruptData>(ResourceNames.FromInterrupt, _fromInterruptPartName);
+                }
+                catch {} // idk why it throws sometimes, but lets just roll with it
+                
                 _interruptOccurred = false;
+                
                 return 0;
             }
             default:

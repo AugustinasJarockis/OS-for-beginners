@@ -12,6 +12,7 @@ public class MainProc : ProcessProgram
     private readonly MemoryManager _memoryManager;
 
     private ProgramInMemoryData _programInMemoryData;
+    private ushort? _focusedProcessId;
 
     public MainProc(ProcessManager processManager, ResourceManager resourceManager, Processor processor, MemoryManager memoryManager)
     {
@@ -19,8 +20,9 @@ public class MainProc : ProcessProgram
         _processor = processor;
         _memoryManager = memoryManager;
         _processManager = processManager;
+        _resourceManager.SubscribeGrantedToPidChange<FocusData>(ResourceNames.Focus, OnFocusedProcessChange);
     }
-
+    
     protected override int Next()
     {
         switch (CurrentStep)
@@ -40,8 +42,13 @@ public class MainProc : ProcessProgram
             {
                 if (_programInMemoryData.IsEnd)
                 {
+                    var vmProc = _processManager.Processes.First(x => x.Name == _programInMemoryData.JobGovernorId).Children.First();
+                    if (vmProc.Id == _focusedProcessId)
+                    {
+                        _resourceManager.ChangeOwnership<FocusData>(ResourceNames.Focus, nameof(FocusData), ProcessManager.CLIProcessId);
+                    }
+                    
                     var killedPids = _processManager.KillProcess(_programInMemoryData.JobGovernorId);
-
                     foreach (var killedPid in killedPids)
                     {
                         _resourceManager.ReleaseProcessResources(killedPid);
@@ -70,4 +77,6 @@ public class MainProc : ProcessProgram
                 return 0;
         }
     }
+    
+    private void OnFocusedProcessChange(string _, ushort? processId, ushort? _1) => _focusedProcessId = processId;
 }

@@ -9,7 +9,7 @@ public class Resource<TPart> : IResource where TPart : ResourcePart
     public List<ResourceRequester> Requesters { get; private set; }
     public List<TPart> Parts { get; private init; }
     public IResourceScheduler<TPart> Scheduler { get; private init; }
-    public List<Action<string, ushort?>> OnGrantedToPidChange { get; private init; }
+    public List<Action<string, ushort?, ushort?>> OnGrantedToPidChange { get; private init; }
 
     private Resource()
     {
@@ -42,12 +42,12 @@ public class Resource<TPart> : IResource where TPart : ResourcePart
         }
     }
 
-    public void SetGrantedToPid<TPart>(TPart part, ushort? grantedToPid) where TPart : ResourcePart
+    public void SetGrantedToPid<TPart>(TPart part, ushort? grantedToPid, ushort? grantedToParentPid) where TPart : ResourcePart
     {
         part.GrantedToPid = grantedToPid;
         foreach (var action in OnGrantedToPidChange)
         {
-            action(part.Name, grantedToPid);
+            action(part.Name, grantedToPid, grantedToParentPid);
         }
     }
 }

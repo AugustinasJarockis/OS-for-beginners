@@ -56,7 +56,7 @@ public class TerminalOutputProc : ProcessProgram
         }
     }
 
-    private void OnFocusedProcessChange(string _, ushort? processId)
+    private void OnFocusedProcessChange(string _, ushort? processId, ushort? _1)
     {
         _focusedProcessId = processId;
         if (processId.HasValue && _bufferByPid.TryGetValue(processId.Value, out var buffer))
