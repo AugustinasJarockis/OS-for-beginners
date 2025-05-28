@@ -25,7 +25,7 @@ public class JobGovernorProc : ProcessProgram
     private JobGovernorInterruptData _interruptData;
 
     private string fileName;
-    private Dictionary<uint, (WriteMode, FileHandleData)> fileHandles;
+    private Dictionary<uint, (WriteMode, FileHandleData)> fileHandles = new();
     private uint nextFileHandleKey = 1;
     private WriteMode writeMode = WriteMode.Unknown;
 
@@ -114,11 +114,13 @@ public class JobGovernorProc : ProcessProgram
                     if (fileHandles.ContainsKey(_registers[(int)Register.R2])) {
                         var fileHandle = fileHandles[_registers[(int)Register.R2]].Item2;
                         byte[] data = _memoryManager.GetData(_registers[(int)Register.R3], _registers[(int)Register.R4]);
+                        FileSystem.OverwriteFile(fileHandle, data);
+                        return 4;
                     }
 
                     _registers[(int)Register.R2] = 0;
                     _registers[(int)Register.R4] = 0;
-                    return 2;
+                    return 4;
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.ReadFromExternalStorage)
                 {
@@ -128,15 +130,15 @@ public class JobGovernorProc : ProcessProgram
                         if (data == null) {
                             _registers[(int)Register.R2] = 0;
                             _registers[(int)Register.R4] = 0;
-                            return 2;
+                            return 4;
                         }
                         _memoryManager.DumpData(_registers[(int)Register.R3], data);
-                        return 2;
+                        return 4;
                     }
 
                     _registers[(int)Register.R2] = 0;
                     _registers[(int)Register.R4] = 0;
-                    return 2;
+                    return 4;
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.GetFileHandle) 
                 {
@@ -158,13 +160,14 @@ public class JobGovernorProc : ProcessProgram
                     else {
                         if (r5 == 2 || r5 == 3 || r5 == 4) {
                             var fileHandle = FileSystem.CreateFile(fileName)!;
+                            fileHandle.GrantedToPid = _vmPid;
                             TrackFileHandle(fileHandle);
-                            return 2;
+                            return 4;
                         }
                     }
 
                     _registers[(int)Register.R2] = 0;
-                        return 2;
+                    return 4;
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.ReleaseFileHandle) 
                 {
@@ -173,7 +176,7 @@ public class JobGovernorProc : ProcessProgram
                         fileHandles.Remove(_registers[(int)Register.R2]);
                         _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
                     }
-                    return 2;
+                    return 4;
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.DeleteFile) 
                 {
@@ -183,7 +186,7 @@ public class JobGovernorProc : ProcessProgram
                         fileHandles.Remove(_registers[(int)Register.R2]);
                         _resourceManager.ReleaseResourcePart(ResourceNames.FileHandle, fileHandle);
                     }
-                    return 2;
+                    return 4;
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.ReadKeyboardInput) 
                 {
@@ -193,7 +196,7 @@ public class JobGovernorProc : ProcessProgram
 
                 return CurrentStep + 1;
             }
-            case 4:
+            case 4: // Return from interrupt 
             {
                 _processManager.UnblockProcess(_vmPid);
                 
@@ -246,7 +249,7 @@ public class JobGovernorProc : ProcessProgram
             {
                 var fileHandle = _resourceManager.ReadResource<FileHandleData>(ResourceNames.FileHandle, fileName);
                 TrackFileHandle(fileHandle);
-                return 2;
+                return 4;
             }
             default:
                 return 5;
