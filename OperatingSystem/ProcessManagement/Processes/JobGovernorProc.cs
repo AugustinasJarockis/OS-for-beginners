@@ -25,7 +25,7 @@ public class JobGovernorProc : ProcessProgram
     private JobGovernorInterruptData _interruptData;
 
     private string fileName;
-    private Dictionary<uint, (WriteMode, FileHandleData)> fileHandles;
+    private Dictionary<uint, (WriteMode, FileHandleData)> fileHandles = new();
     private uint nextFileHandleKey = 1;
     private WriteMode writeMode = WriteMode.Unknown;
 
@@ -158,13 +158,14 @@ public class JobGovernorProc : ProcessProgram
                     else {
                         if (r5 == 2 || r5 == 3 || r5 == 4) {
                             var fileHandle = FileSystem.CreateFile(fileName)!;
+                            fileHandle.GrantedToPid = _vmPid;
                             TrackFileHandle(fileHandle);
                             return 2;
                         }
                     }
 
                     _registers[(int)Register.R2] = 0;
-                        return 2;
+                    return 2;
                 }
                 else if (_interruptData.InterruptCode == InterruptCodes.ReleaseFileHandle) 
                 {

@@ -87,6 +87,8 @@ public class StartStopProc : ProcessProgram
                 TransferDataFileToExternalStorage("read_input.txt");
                 LoadProgram("read_input.txt");
 
+                TransferDataFileToExternalStorage("write.txt");
+
                 return CurrentStep + 1;
             }
             case 1:
