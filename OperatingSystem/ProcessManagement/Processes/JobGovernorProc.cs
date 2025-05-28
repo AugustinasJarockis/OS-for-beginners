@@ -133,6 +133,7 @@ public class JobGovernorProc : ProcessProgram
                             return 4;
                         }
                         _memoryManager.DumpData(_registers[(int)Register.R3], data);
+                        _registers[(int)Register.R4] = (uint)data.Length;
                         return 4;
                     }
 
