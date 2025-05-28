@@ -153,6 +153,10 @@ public static class FileSystem
 
         uint currentBlockNr = (uint)(bytesToSkip / 4096);
         uint[] blockIndexes = blocksMetadata.Select(m => m.BlockIndex).ToArray();
+
+        if (blockIndexes.Length == 0)
+            return [];
+
         var currentBlock = _externalStorage.ReadBlock(blockIndexes[currentBlockNr]);
 
         for (int i = (int)bytesToSkip; i < bytesToRead + bytesToSkip; i++) {
